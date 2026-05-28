@@ -186,6 +186,48 @@ const MinimalistMiniPreview = () => (
   </div>
 );
 
+const CreativeMiniPreview = () => (
+  <div className="w-full h-full flex scale-90">
+    <div className="w-1/3 h-full bg-primary/80 flex flex-col gap-1 p-1.5 rounded-l">
+      <div className="w-8 h-8 rounded-lg bg-primary-content/30 mx-auto mb-1" />
+      <div className="h-1 bg-primary-content/40 rounded w-full" />
+      <div className="h-0.5 bg-primary-content/25 rounded w-3/4" />
+      <div className="h-1 bg-secondary/60 rounded-full w-full mt-1" />
+      <div className="h-1 bg-secondary/60 rounded-full w-2/3" />
+    </div>
+    <div className="w-2/3 h-full flex flex-col gap-1 p-1.5">
+      <div className="h-1.5 bg-base-content/30 rounded w-3/4" />
+      <div className="h-1 bg-primary/40 rounded w-1/2 mb-1" />
+      <div className="h-4 bg-base-200 rounded-lg w-full" />
+      <div className="h-4 bg-base-200 rounded-lg w-full" />
+    </div>
+  </div>
+);
+
+const ExecutiveMiniPreview = () => (
+  <div className="w-full h-full p-2 flex flex-col gap-1 scale-90">
+    <div className="text-center border-b border-primary/50 pb-1 mb-1">
+      <div className="h-2 bg-base-content/35 rounded w-2/3 mx-auto" />
+      <div className="h-1 bg-primary/50 rounded w-1/3 mx-auto mt-0.5" />
+      <div className="flex justify-center gap-1 mt-0.5">
+        <div className="h-0.5 bg-base-content/20 rounded w-1/4" />
+        <div className="h-0.5 bg-base-content/20 rounded w-1/4" />
+      </div>
+    </div>
+    <div className="flex gap-1.5 flex-1">
+      <div className="w-2/3 flex flex-col gap-1">
+        <div className="h-0.5 bg-primary/40 rounded w-full" />
+        <div className="h-0.5 bg-base-content/15 rounded w-full" />
+        <div className="h-0.5 bg-base-content/15 rounded w-5/6" />
+      </div>
+      <div className="w-1/3 flex flex-col gap-1">
+        <div className="h-0.5 bg-primary/40 rounded w-full" />
+        <div className="h-0.5 bg-base-content/15 rounded w-full" />
+        <div className="h-0.5 bg-base-content/15 rounded w-3/4" />
+      </div>
+    </div>
+  </div>
+);
 // ─── Main Builder Page ────────────────────────────────────────────────────────
 export default function BuilderPage() {
   const params = useParams();
@@ -489,7 +531,7 @@ export default function BuilderPage() {
                 <LayoutTemplate className="w-4 h-4 text-primary" />
                 <h3 className="font-bold text-sm text-base-content">Modèle de CV</h3>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <TemplateCard
                   name="classic"
                   label="Classique"
@@ -509,10 +551,26 @@ export default function BuilderPage() {
                 <TemplateCard
                   name="minimalist"
                   label="Minimaliste"
-                  description="Mono-colonne, design très épuré"
+                  description="Mono-colonne, très épuré"
                   preview={<MinimalistMiniPreview />}
                   selected={template === 'minimalist'}
                   onSelect={() => setTemplate('minimalist')}
+                />
+                <TemplateCard
+                  name="creative"
+                  label="Créatif"
+                  description="Sidebar colorée, cartes arrondies"
+                  preview={<CreativeMiniPreview />}
+                  selected={template === 'creative'}
+                  onSelect={() => setTemplate('creative')}
+                />
+                <TemplateCard
+                  name="executive"
+                  label="Executive"
+                  description="Sobre et professionnel, sans photo"
+                  preview={<ExecutiveMiniPreview />}
+                  selected={template === 'executive'}
+                  onSelect={() => setTemplate('executive')}
                 />
               </div>
             </div>
@@ -564,10 +622,16 @@ export default function BuilderPage() {
   );
 
   // ── Preview Panel ──────────────────────────────────────────────────────────
+  // CV is 950px wide x 1200px tall. We need to compute real height after scale
+  // so the scroll container fills properly and doesn't clip the content.
+  const CV_W = 950;
+  const CV_H = 1200;
   const PreviewPanel = ({ isMobile = false }: { isMobile?: boolean }) => {
     const scale = isMobile ? 0.28 : zoom / 200;
+    const scaledW = CV_W * scale;
+    const scaledH = CV_H * scale;
     return (
-      <div className="w-full h-full bg-base-300 bg-[url('/file.svg')] bg-cover bg-center flex items-start justify-center overflow-auto relative">
+      <div className="w-full h-full bg-base-300 bg-[url('/file.svg')] bg-cover bg-center overflow-auto relative">
         {!isMobile && (
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-base-100/80 backdrop-blur px-3 py-1.5 rounded-xl border border-base-content/10 shadow">
             <Monitor className="w-3.5 h-3.5 text-primary" />
@@ -575,8 +639,20 @@ export default function BuilderPage() {
             <Sparkles className="w-3 h-3 text-warning animate-pulse" />
           </div>
         )}
-        <div className="flex justify-center items-start pt-16 pb-8 px-4 min-h-full">
-          <div style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+        {/* Container sized to the post-scale CV dimensions so scroll is correct */}
+        <div
+          className="flex justify-center items-start py-8 px-4"
+          style={{ minHeight: `${scaledH + 64}px` }}
+        >
+          <div
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: 'top center',
+              width: `${CV_W}px`,
+              height: `${CV_H}px`,
+              marginBottom: `${scaledH - CV_H}px`,
+            }}
+          >
             <CVPreview
               personalDetails={personalDetails}
               file={file}
@@ -621,8 +697,20 @@ export default function BuilderPage() {
             <EditorPanel />
           ) : (
             <div className="h-full overflow-auto bg-base-300">
-              <div className="flex justify-center items-start pt-6 pb-6 px-2">
-                <div style={{ transform: 'scale(0.32)', transformOrigin: 'top center', width: '950px' }}>
+              {/* Mobile scale: 0.32 → CV 950×1200 → rendered ~304×384px visible */}
+              <div
+                className="flex justify-center px-2 py-6"
+                style={{ minHeight: `${1200 * 0.32 + 80}px` }}
+              >
+                <div
+                  style={{
+                    transform: 'scale(0.32)',
+                    transformOrigin: 'top center',
+                    width: '950px',
+                    height: '1200px',
+                    marginBottom: `${1200 * 0.32 - 1200}px`,
+                  }}
+                >
                   <CVPreview
                     personalDetails={personalDetails}
                     file={file}
@@ -637,7 +725,7 @@ export default function BuilderPage() {
                 </div>
               </div>
               <div className="text-center pb-4">
-                <p className="text-xs text-base-content/40">Aperçu réduit • Utilisez le bouton Télécharger pour le PDF complet</p>
+                <p className="text-xs text-base-content/40">Aperçu réduit • Appuyez sur Télécharger pour le PDF complet</p>
               </div>
             </div>
           )}

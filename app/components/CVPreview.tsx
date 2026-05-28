@@ -602,11 +602,333 @@ const CVPreview: React.FC<Props> = ({
         );
     }
 
+    // Rendu du Modèle Créatif (Design coloré avec sidebar contrastée, tags et sections arrondies)
+    const renderCreativeTemplate = () => {
+        return (
+            <div className="flex w-full h-full text-base-content bg-base-100 select-none text-left">
+                {/* Left Colored Sidebar (1/3) */}
+                <div className="w-1/3 bg-primary text-primary-content p-8 flex flex-col gap-6 relative overflow-hidden">
+                    {/* Decorative bubble */}
+                    <div className="absolute top-[-50px] right-[-50px] w-36 h-36 rounded-full bg-secondary/20 pointer-events-none" />
+                    <div className="absolute bottom-[-30px] left-[-30px] w-24 h-24 rounded-full bg-accent/20 pointer-events-none" />
+                    
+                    <div className="z-10 flex flex-col items-center text-center">
+                        {imageSrc && (
+                            <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-primary-content shadow-lg rotate-3 hover:rotate-0 transition-transform duration-300 mb-4 shrink-0">
+                                <img
+                                    src={imageSrc}
+                                    className="w-full h-full object-cover"
+                                    alt={personalDetails.fullName}
+                                />
+                            </div>
+                        )}
+                        <h1 className="text-xl font-black uppercase tracking-wide leading-tight">{personalDetails.fullName}</h1>
+                        <h2 className="text-xs font-bold bg-secondary text-secondary-content px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-wider">
+                            {personalDetails.postSeeking}
+                        </h2>
+                    </div>
+
+                    {/* Contact */}
+                    <div className="z-10">
+                        <h3 className="text-xs font-bold uppercase tracking-widest border-b border-primary-content/20 pb-1 mb-3">
+                            Contact
+                        </h3>
+                        <ul className="space-y-2.5 text-xs">
+                            {personalDetails.phone && (
+                                <li className="flex items-center gap-2">
+                                    <Phone className="w-4 h-4 shrink-0 text-secondary" />
+                                    <span className="break-all">{personalDetails.phone}</span>
+                                </li>
+                            )}
+                            {personalDetails.email && (
+                                <li className="flex items-center gap-2">
+                                    <Mail className="w-4 h-4 shrink-0 text-secondary" />
+                                    <span className="break-all">{personalDetails.email}</span>
+                                </li>
+                            )}
+                            {personalDetails.address && (
+                                <li className="flex items-start gap-2">
+                                    <MapPinCheckInside className="w-4 h-4 shrink-0 text-secondary mt-0.5" />
+                                    <span className="break-words">{personalDetails.address}</span>
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+
+                    {/* Skills */}
+                    {skills.length > 0 && (
+                        <div className="z-10">
+                            <h3 className="text-xs font-bold uppercase tracking-widest border-b border-primary-content/20 pb-1 mb-3">
+                                Compétences
+                            </h3>
+                            <div className="flex flex-wrap gap-1.5">
+                                {skills.map((skill, index) => (
+                                    <span key={index} className="bg-primary-content/15 text-primary-content border border-primary-content/20 badge badge-sm py-2 text-[10px] uppercase font-bold">
+                                        {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Languages */}
+                    {languages.length > 0 && (
+                        <div className="z-10">
+                            <h3 className="text-xs font-bold uppercase tracking-widest border-b border-primary-content/20 pb-1 mb-3">
+                                Langues
+                            </h3>
+                            <div className="space-y-2">
+                                {languages.map((lang, index) => (
+                                    <div key={index} className="flex justify-between items-center text-xs">
+                                        <span className="capitalize font-semibold">{lang.language}</span>
+                                        <div className="flex gap-0.5">
+                                            {Array.from({ length: 5 }, (_, idx) => {
+                                                const isFilled = idx < (lang.proficiency === 'Débutant' ? 1 : lang.proficiency === 'Intermédiaire' ? 3 : 5);
+                                                return <Star key={idx} className={`w-3 h-3 ${isFilled ? 'fill-secondary text-secondary' : 'text-primary-content/30'}`} />;
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Hobbies */}
+                    {hobbies.length > 0 && (
+                        <div className="z-10">
+                            <h3 className="text-xs font-bold uppercase tracking-widest border-b border-primary-content/20 pb-1 mb-2">
+                                Loisirs
+                            </h3>
+                            <div className="flex flex-wrap gap-1">
+                                {hobbies.map((hobby, index) => (
+                                    <span key={index} className="text-[10px] capitalize bg-primary-content/10 px-2 py-0.5 rounded">
+                                        {hobby.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Panel (2/3) */}
+                <div className="w-2/3 p-10 flex flex-col gap-6 overflow-y-auto">
+                    {/* Summary */}
+                    {personalDetails.description && (
+                        <div className="bg-base-200/50 p-5 rounded-2xl border border-base-content/5 relative">
+                            <span className="absolute top-2 right-4 text-4xl text-primary/10 font-serif font-black">&ldquo;</span>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Profil</h3>
+                            <p className="text-xs text-base-content/85 leading-relaxed font-medium">
+                                {personalDetails.description}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Experiences */}
+                    {experiences.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-primary border-b border-primary/20 pb-1.5 mb-4 flex items-center gap-2">
+                                <BriefcaseBusiness className="w-4 h-4 text-primary" /> Expériences Professionnelles
+                            </h3>
+                            <div className="space-y-4">
+                                {experiences.map((exp, index) => (
+                                    <div key={index} className="bg-base-200/30 p-4 rounded-xl border border-base-content/5 hover:border-primary/25 transition-all">
+                                        <div className="flex justify-between items-baseline">
+                                            <h4 className="font-bold text-sm text-base-content uppercase">{exp.jobTitle}</h4>
+                                            <span className="badge badge-secondary badge-xs py-2 text-[9px] font-bold">
+                                                {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                                            </span>
+                                        </div>
+                                        <div className="text-[11px] font-bold text-primary mt-1">{exp.companyName}</div>
+                                        <p className="text-xs text-base-content/75 mt-2 leading-relaxed">{exp.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Educations */}
+                    {educations.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-primary border-b border-primary/20 pb-1.5 mb-4 flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4 text-primary" /> Formations
+                            </h3>
+                            <div className="space-y-4">
+                                {educations.map((edu, index) => (
+                                    <div key={index} className="bg-base-200/30 p-4 rounded-xl border border-base-content/5">
+                                        <div className="flex justify-between items-baseline">
+                                            <h4 className="font-bold text-sm text-base-content uppercase">{edu.degree}</h4>
+                                            <span className="badge badge-accent badge-xs py-2 text-[9px] font-bold">
+                                                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                                            </span>
+                                        </div>
+                                        <div className="text-[11px] font-bold text-primary mt-1">{edu.school}</div>
+                                        <p className="text-xs text-base-content/75 mt-2 leading-relaxed">{edu.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // Rendu du Modèle Corporate/Executive (Sobre, professionnel, structuré sans photo)
+    const renderExecutiveTemplate = () => {
+        return (
+            <div className="flex flex-col w-full h-full p-14 bg-base-100 text-base-content select-none text-left overflow-y-auto">
+                {/* Clean Top Header (Centered) */}
+                <div className="text-center border-b-2 border-primary pb-5 mb-6">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-base-content uppercase">{personalDetails.fullName}</h1>
+                    <h2 className="text-sm font-bold text-primary mt-1 uppercase tracking-widest">{personalDetails.postSeeking}</h2>
+                    
+                    {/* Contact inline line */}
+                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-base-content/70 mt-3 font-semibold">
+                        {personalDetails.phone && (
+                            <span className="flex items-center gap-1">
+                                <Phone className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.phone}
+                            </span>
+                        )}
+                        {personalDetails.email && (
+                            <span className="flex items-center gap-1">
+                                <Mail className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.email}
+                            </span>
+                        )}
+                        {personalDetails.address && (
+                            <span className="flex items-center gap-1">
+                                <MapPinCheckInside className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.address}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Professional Profile */}
+                {personalDetails.description && (
+                    <div className="mb-6">
+                        <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-2">
+                            Profil Professionnel
+                        </h3>
+                        <p className="text-xs text-base-content/80 leading-relaxed text-justify">
+                            {personalDetails.description}
+                        </p>
+                    </div>
+                )}
+
+                {/* Main Corporate Section split */}
+                <div className="flex flex-1 gap-8">
+                    {/* Left main area (2/3) */}
+                    <div className="w-2/3 flex flex-col gap-6">
+                        {/* Experiences */}
+                        {experiences.length > 0 && (
+                            <div>
+                                <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-3">
+                                    Expériences Professionnelles
+                                </h3>
+                                <div className="space-y-4">
+                                    {experiences.map((exp, index) => (
+                                        <div key={index} className="text-xs">
+                                            <div className="flex justify-between items-baseline font-bold">
+                                                <h4 className="text-sm text-base-content uppercase">{exp.jobTitle}</h4>
+                                                <span className="text-[10px] text-base-content/50 italic font-normal">
+                                                    {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                                                </span>
+                                            </div>
+                                            <div className="text-[11px] font-bold text-primary mt-0.5">{exp.companyName}</div>
+                                            <p className="text-[11px] text-base-content/70 mt-1.5 leading-relaxed text-justify">{exp.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Educations */}
+                        {educations.length > 0 && (
+                            <div>
+                                <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-3">
+                                    Parcours Académique
+                                </h3>
+                                <div className="space-y-4">
+                                    {educations.map((edu, index) => (
+                                        <div key={index} className="text-xs">
+                                            <div className="flex justify-between items-baseline font-bold">
+                                                <h4 className="text-sm text-base-content uppercase">{edu.degree}</h4>
+                                                <span className="text-[10px] text-base-content/50 italic font-normal">
+                                                    {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                                                </span>
+                                            </div>
+                                            <div className="text-[11px] font-bold text-primary mt-0.5">{edu.school}</div>
+                                            <p className="text-[11px] text-base-content/70 mt-1.5 leading-relaxed text-justify">{edu.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right main area (1/3) */}
+                    <div className="w-1/3 flex flex-col gap-6">
+                        {/* Skills */}
+                        {skills.length > 0 && (
+                            <div>
+                                <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-3">
+                                    Expertises
+                                </h3>
+                                <ul className="space-y-1.5 text-xs font-semibold">
+                                    {skills.map((skill, index) => (
+                                        <li key={index} className="flex items-center gap-2 text-base-content/80">
+                                            <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                                            <span className="uppercase text-[10px]">{skill.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Languages */}
+                        {languages.length > 0 && (
+                            <div>
+                                <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-3">
+                                    Langues
+                                </h3>
+                                <div className="space-y-2">
+                                    {languages.map((lang, index) => (
+                                        <div key={index} className="flex justify-between items-center text-xs">
+                                            <span className="capitalize font-semibold text-base-content/85">{lang.language}</span>
+                                            <span className="text-[10px] font-bold text-primary/80">{lang.proficiency}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Hobbies */}
+                        {hobbies.length > 0 && (
+                            <div>
+                                <h3 className="text-xs uppercase font-extrabold tracking-widest text-primary border-b border-base-content/20 pb-1 mb-2">
+                                    Loisirs
+                                </h3>
+                                <ul className="list-disc list-inside text-xs text-base-content/70 space-y-1.5">
+                                    {hobbies.map((hobby, index) => (
+                                        <li key={index} className="capitalize">
+                                            {hobby.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div ref={ref} className={`flex w-[950px] h-[1200px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
             {template === 'modern' && renderModernTemplate()}
             {template === 'minimalist' && renderMinimalistTemplate()}
             {template === 'classic' && renderClassicTemplate()}
+            {template === 'creative' && renderCreativeTemplate()}
+            {template === 'executive' && renderExecutiveTemplate()}
         </div>
     );
 }
