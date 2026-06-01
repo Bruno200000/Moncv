@@ -28,6 +28,10 @@ export interface CV {
   updatedAt: string;
 }
 
+export function getCurrentMonthKey(date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
 interface DatabaseSchema {
   users: User[];
   cvs: CV[];
@@ -134,6 +138,13 @@ export const db = {
     return readDb().cvs.filter(cv => cv.userId === userId);
   },
 
+  getCVsCreatedThisMonth(userId: string): CV[] {
+    const currentMonth = getCurrentMonthKey();
+    return readDb().cvs.filter((cv) => (
+      cv.userId === userId && getCurrentMonthKey(new Date(cv.createdAt)) === currentMonth
+    ));
+  },
+
   getCV(id: string): CV | undefined {
     return readDb().cvs.find(cv => cv.id === id);
   },
@@ -145,10 +156,13 @@ export const db = {
 
     // Compter le nombre de CVs existants pour l'utilisateur
     const existingCvsCount = data.cvs.filter(cv => cv.userId === userId).length;
+    const monthlyCvsCount = data.cvs.filter((cv) => (
+      cv.userId === userId && getCurrentMonthKey(new Date(cv.createdAt)) === getCurrentMonthKey()
+    )).length;
     
     // Vérification des quotas du plan
-    if (user.plan === 'free' && existingCvsCount >= 3) {
-      throw new Error("Limite atteinte. Le plan gratuit est limité à 3 CVs.");
+    if (user.plan === 'free' && monthlyCvsCount >= 3) {
+      throw new Error("Limite atteinte. Vous avez utilisé vos 3 essais gratuits du mois. Passez au plan VIP pour créer des CVs illimités.");
     } else if (user.plan === 'premium' && existingCvsCount >= 10) {
       throw new Error("Limite atteinte. Le plan Premium est limité à 10 CVs.");
     }

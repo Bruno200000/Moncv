@@ -6,6 +6,15 @@ import {
   Zap, Lock, LayoutTemplate, Download, CheckCircle2 
 } from 'lucide-react';
 
+const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
+const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
+
+const buildPaymentUrl = (url: string, plan: 'premium' | 'vip') => {
+  if (typeof window === 'undefined') return url;
+  const redirectUrl = `${window.location.origin}/payment/${plan}/success`;
+  return `${url}&success_url=${encodeURIComponent(redirectUrl)}&return_url=${encodeURIComponent(redirectUrl)}`;
+};
+
 interface UserSession {
   id: string;
   name: string;
@@ -15,8 +24,6 @@ interface UserSession {
 export default function LandingPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [upgradingPlan, setUpgradingPlan] = useState<'premium' | 'vip' | null>(null);
-  const [pricingMessage, setPricingMessage] = useState('');
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté pour adapter la navigation
@@ -30,33 +37,6 @@ export default function LandingPage() {
       .catch((err) => console.error("Erreur de session :", err))
       .finally(() => setLoading(false));
   }, []);
-
-  const handleUpgrade = async (plan: 'premium' | 'vip') => {
-    if (!session) return;
-
-    setUpgradingPlan(plan);
-    setPricingMessage('');
-
-    try {
-      const res = await fetch('/api/user/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Impossible de changer de forfait.");
-      }
-
-      setSession({ ...session, plan });
-      setPricingMessage(`Votre forfait ${plan.toUpperCase()} est maintenant actif.`);
-    } catch (err: any) {
-      setPricingMessage(err.message || "Une erreur est survenue.");
-    } finally {
-      setUpgradingPlan(null);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-base-300 text-base-content font-sans overflow-x-hidden relative selection:bg-primary selection:text-primary-content">
@@ -242,11 +222,6 @@ export default function LandingPage() {
           <p className="text-sm sm:text-base text-base-content/60 max-w-xl mx-auto">
             Commencez gratuitement, puis passez à la vitesse supérieure quand vous en avez besoin.
           </p>
-          {pricingMessage && (
-            <div className="alert alert-info mt-6 max-w-xl mx-auto rounded-xl py-3 text-sm">
-              <span>{pricingMessage}</span>
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
@@ -300,7 +275,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold mt-1 mb-4">Accès Plus</h3>
               
               <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-extrabold text-primary">500 FCFA</span>
+                <span className="text-4xl font-extrabold text-primary">1 000 FCFA</span>
                 <span className="text-xs text-base-content/60 ml-1">/ mois</span>
               </div>
               
@@ -327,19 +302,26 @@ export default function LandingPage() {
             </div>
 
             {session ? (
-              <button
-                onClick={() => handleUpgrade('premium')}
-                disabled={upgradingPlan !== null || session.plan === 'premium'}
-                className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
-              >
-                {upgradingPlan === 'premium' ? <span className="loading loading-spinner loading-sm" /> : session.plan === 'premium' ? "Forfait actuel" : "Choisir Premium"}
-              </button>
+              session.plan === 'premium' ? (
+                <button disabled className="btn btn-primary btn-block rounded-xl normal-case">
+                  Forfait actuel
+                </button>
+              ) : (
+                <a
+                  href={buildPaymentUrl(PREMIUM_PAYMENT_URL, 'premium')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
+                >
+                  Payer 1 000 FCFA
+                </a>
+              )
             ) : (
               <Link
                 href="/register?next=/dashboard&create=1"
                 className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
               >
-                Obtenir l'Accès Premium
+                Créer un compte pour payer
               </Link>
             )}
           </div>
@@ -378,19 +360,26 @@ export default function LandingPage() {
             </div>
 
             {session ? (
-              <button
-                onClick={() => handleUpgrade('vip')}
-                disabled={upgradingPlan !== null || session.plan === 'vip'}
-                className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
-              >
-                {upgradingPlan === 'vip' ? <span className="loading loading-spinner loading-sm" /> : session.plan === 'vip' ? "Forfait actuel" : "Choisir VIP"}
-              </button>
+              session.plan === 'vip' ? (
+                <button disabled className="btn btn-warning btn-block rounded-xl normal-case">
+                  Forfait actuel
+                </button>
+              ) : (
+                <a
+                  href={buildPaymentUrl(VIP_PAYMENT_URL, 'vip')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
+                >
+                  Payer 3 000 FCFA
+                </a>
+              )
             ) : (
               <Link
                 href="/register?next=/dashboard&create=1"
                 className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
               >
-                Devenir membre VIP
+                Créer un compte pour payer
               </Link>
             )}
           </div>

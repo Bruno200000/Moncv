@@ -13,6 +13,7 @@ export async function GET() {
     // Calculer le nombre de CVs existants
     const cvs = db.getCVs(user.id);
     const cvsCount = cvs.length;
+    const monthlyCvsCount = db.getCVsCreatedThisMonth(user.id).length;
 
     // Déterminer la limite de CVs en fonction du plan
     let limit = 3;
@@ -29,7 +30,8 @@ export async function GET() {
         name: user.name,
         email: user.email,
         plan: user.plan,
-        cvsCount,
+        cvsCount: user.plan === 'free' ? monthlyCvsCount : cvsCount,
+        totalCvsCount: cvsCount,
         limit
       }
     });

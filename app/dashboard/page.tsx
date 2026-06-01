@@ -8,6 +8,15 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
+const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
+
+const buildPaymentUrl = (url: string, plan: 'premium' | 'vip') => {
+  if (typeof window === 'undefined') return url;
+  const redirectUrl = `${window.location.origin}/payment/${plan}/success`;
+  return `${url}&success_url=${encodeURIComponent(redirectUrl)}&return_url=${encodeURIComponent(redirectUrl)}`;
+};
+
 interface CV {
   id: string;
   name: string;
@@ -44,7 +53,6 @@ export default function DashboardPage() {
   
   // Upgrade Modal status
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
 
   // Charger la session et les CVs
   const fetchData = async () => {
@@ -155,7 +163,7 @@ export default function DashboardPage() {
 
   const handleDuplicateCv = async (cv: CV) => {
     if (user && user.cvsCount >= user.limit) {
-      setError("Limite de votre forfait atteinte. Veuillez mettre à niveau pour dupliquer ce CV.");
+      setError("Limite atteinte. Passez au plan VIP pour dupliquer et créer des CVs sans limite.");
       setShowUpgradeModal(true);
       return;
     }
@@ -206,41 +214,6 @@ export default function DashboardPage() {
       });
     } catch (err: any) {
       alert(err.message);
-    }
-  };
-
-  const handleUpgrade = async (plan: 'premium' | 'vip') => {
-    setUpgradingPlan(plan);
-    try {
-      const res = await fetch('/api/user/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur de mise à niveau.");
-      }
-
-      // Succès
-      fetchData();
-      setShowUpgradeModal(false);
-      
-      // Explosion de confettis premium !
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.5 },
-        colors: plan === 'vip' ? ['#ff00ff', '#00ffff', '#ffff00', '#ffffff'] : ['#570df8', '#f000b8', '#37cdbe']
-      });
-
-      alert(data.message);
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setUpgradingPlan(null);
     }
   };
 
@@ -315,7 +288,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-bold mb-2">Utilisation de votre Forfait</h2>
               <p className="text-sm text-base-content/60 mb-4">
                 {user?.plan === 'free' 
-                  ? "Vous utilisez le forfait d'essai gratuit. Mettez à niveau pour créer plus de 3 CVs et accéder à tous les thèmes."
+                  ? "Vous utilisez le forfait gratuit : 3 essais de CV par mois. Passez au VIP pour créer sans limite."
                   : user?.plan === 'premium'
                   ? "Vous êtes membre Premium. Vous pouvez créer jusqu'à 10 CVs avec tous les thèmes premium."
                   : "Vous possédez l'accès VIP Illimité. Vous n'avez aucune limite et profitez de l'export HD sans filigrane."}
@@ -542,7 +515,7 @@ export default function DashboardPage() {
                   
                   <ul className="space-y-2 text-xs mb-6">
                     <li className="flex items-center gap-2 text-base-content/80">
-                      <Check className="w-4 h-4 text-success" /> Jusqu'à 3 CVs
+                      <Check className="w-4 h-4 text-success" /> Jusqu'à 3 CVs par mois
                     </li>
                     <li className="flex items-center gap-2 text-base-content/80">
                       <Check className="w-4 h-4 text-success" /> Thèmes de base Next.js
@@ -568,19 +541,19 @@ export default function DashboardPage() {
                 </div>
                 
                 <div>
-                  <h4 className="font-bold text-lg mt-1">Premium Access</h4>
+                  <h4 className="font-bold text-lg mt-1">Accès Plus</h4>
                   <div className="flex items-baseline my-3">
-                    <span className="text-3xl font-extrabold text-primary">500 FCFA</span>
+                    <span className="text-3xl font-extrabold text-primary">1 000 FCFA</span>
                     <span className="text-xs text-base-content/60 ml-1">/ mois</span>
                   </div>
                   <p className="text-xs text-base-content/50 mb-4">Pour une recherche d'emploi efficace.</p>
                   
                   <ul className="space-y-2 text-xs mb-6">
                     <li className="flex items-center gap-2 text-base-content/80">
-                      <Check className="w-4 h-4 text-primary" /> **Jusqu'à 10 CVs**
+                      <Check className="w-4 h-4 text-primary" /> Jusqu'à 10 CVs
                     </li>
                     <li className="flex items-center gap-2 text-base-content/80">
-                      <Check className="w-4 h-4 text-primary" /> Accès à **tous les thèmes**
+                      <Check className="w-4 h-4 text-primary" /> Accès à tous les thèmes
                     </li>
                     <li className="flex items-center gap-2 text-base-content/80">
                       <Check className="w-4 h-4 text-primary" /> Support par email 24h
@@ -591,19 +564,20 @@ export default function DashboardPage() {
                   </ul>
                 </div>
 
-                <button 
-                  onClick={() => handleUpgrade('premium')}
-                  disabled={upgradingPlan !== null || user?.plan === 'premium'}
-                  className="btn btn-sm btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-lg normal-case shadow-md"
-                >
-                  {upgradingPlan === 'premium' ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : user?.plan === 'premium' ? (
-                    "Plan actuel"
-                  ) : (
-                    "Choisir Premium"
-                  )}
-                </button>
+                {user?.plan === 'premium' ? (
+                  <button disabled className="btn btn-sm btn-primary btn-block rounded-lg normal-case">
+                    Plan actuel
+                  </button>
+                ) : (
+                  <a
+                    href={buildPaymentUrl(PREMIUM_PAYMENT_URL, 'premium')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-lg normal-case shadow-md"
+                  >
+                    Payer 1 000 FCFA
+                  </a>
+                )}
               </div>
 
               {/* VIP Plan Card */}
@@ -622,13 +596,13 @@ export default function DashboardPage() {
                   
                   <ul className="space-y-2 text-xs mb-6">
                     <li className="flex items-center gap-2 text-neutral-content/90">
-                      <Check className="w-4 h-4 text-warning" /> **CVs Illimités**
+                      <Check className="w-4 h-4 text-warning" /> CVs Illimités
                     </li>
                     <li className="flex items-center gap-2 text-neutral-content/90">
                       <Check className="w-4 h-4 text-warning" /> Thèmes exclusifs VIP
                     </li>
                     <li className="flex items-center gap-2 text-neutral-content/90">
-                      <Check className="w-4 h-4 text-warning" /> **Export PDF HD sans filigrane**
+                      <Check className="w-4 h-4 text-warning" /> Export PDF HD sans filigrane
                     </li>
                     <li className="flex items-center gap-2 text-neutral-content/90">
                       <Check className="w-4 h-4 text-warning" /> Support prioritaire 24/7
@@ -636,19 +610,20 @@ export default function DashboardPage() {
                   </ul>
                 </div>
 
-                <button 
-                  onClick={() => handleUpgrade('vip')}
-                  disabled={upgradingPlan !== null || user?.plan === 'vip'}
-                  className="btn btn-sm btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-lg normal-case shadow-md hover:scale-[1.01]"
-                >
-                  {upgradingPlan === 'vip' ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : user?.plan === 'vip' ? (
-                    "Plan actuel"
-                  ) : (
-                    "Choisir VIP"
-                  )}
-                </button>
+                {user?.plan === 'vip' ? (
+                  <button disabled className="btn btn-sm btn-warning btn-block rounded-lg normal-case">
+                    Plan actuel
+                  </button>
+                ) : (
+                  <a
+                    href={buildPaymentUrl(VIP_PAYMENT_URL, 'vip')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-lg normal-case shadow-md hover:scale-[1.01]"
+                  >
+                    Payer 3 000 FCFA
+                  </a>
+                )}
               </div>
 
             </div>
