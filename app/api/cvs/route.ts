@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { canUseTemplate } from '@/lib/cvTemplates';
 
 // Lister tous les CVs de l'utilisateur connecté
 export async function GET() {
@@ -43,6 +44,13 @@ export async function POST(request: Request) {
       if (body.template) template = body.template;
     } catch (e) {
       // Ignorer si pas de corps JSON (par exemple création par défaut)
+    }
+
+    if (!canUseTemplate(user.plan, template)) {
+      return NextResponse.json(
+        { error: "Ce modele n'est pas inclus dans votre abonnement." },
+        { status: 403 }
+      );
     }
 
     const newCv = await db.createCV(user.id, name, template);

@@ -31,8 +31,7 @@ const PersonalDetailsForm: React.FC<Props> = ({ personalDetails, setPersonalDeta
       />
       <div className='flex'>
         <input
-          type="tel"
-          inputMode="tel"
+          type="email"
           placeholder='Email'
           value={personalDetails.email}
           onChange={(e) => handleChange(e, 'email')}

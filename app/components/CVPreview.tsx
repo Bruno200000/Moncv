@@ -1124,8 +1124,15 @@ const CVPreview: React.FC<Props> = ({
             {template === 'classic' && renderClassicTemplate()}
             {template === 'creative' && renderCreativeTemplate()}
             {template === 'executive' && renderExecutiveTemplate()}
+            {['starter', 'elegant'].includes(template) && renderMinimalistTemplate()}
+            {['clean', 'focus'].includes(template) && renderModernTemplate()}
+            {['timeline', 'pro-sidebar'].includes(template) && renderClassicTemplate()}
+            {['corporate-plus', 'director'].includes(template) && renderExecutiveTemplate()}
+            {['tech', 'portfolio'].includes(template) && renderCreativeTemplate()}
             {template === 'vip-signature' && renderVipSignatureTemplate()}
             {template === 'vip-atlas' && renderVipAtlasTemplate()}
+            {['prestige', 'luxe'].includes(template) && renderVipSignatureTemplate()}
+            {['elite'].includes(template) && renderVipAtlasTemplate()}
         </div>
     );
 }

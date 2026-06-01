@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { PersonalDetails, Experience, Education, Skill, Language, Hobby } from '@/type';
+import { canUseTemplate } from '@/lib/cvTemplates';
 
 export interface User {
   id: string;
@@ -294,6 +295,10 @@ export const db = {
     }
     if (user.plan === 'premium' && total >= 10) {
       throw new Error('Limite atteinte. Le plan Premium est limité à 10 CVs.');
+    }
+
+    if (!canUseTemplate(user.plan, template)) {
+      throw new Error("Ce modele n'est pas inclus dans votre abonnement.");
     }
 
     const personalDetails: PersonalDetails = {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { canUseTemplate } from '@/lib/cvTemplates';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -57,6 +58,13 @@ export async function PUT(request: Request, { params }: RouteContext) {
 
     const { id } = await params;
     const body = await request.json();
+
+    if (body.template && !canUseTemplate(user.plan, body.template)) {
+      return NextResponse.json(
+        { error: "Ce modele n'est pas inclus dans votre abonnement." },
+        { status: 403 }
+      );
+    }
 
     // Filtre les champs modifiables
     const allowedFields = {

@@ -16,11 +16,12 @@ import EducationForm from "@/app/components/EducationForm";
 import LanguageForm from "@/app/components/LanguageForm";
 import SkillForm from "@/app/components/SkillForm";
 import HobbyForm from "@/app/components/HobbyForm";
+import { canUseTemplate, CV_TEMPLATES, getTemplateTier, type UserPlan } from "@/lib/cvTemplates";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import confetti from "canvas-confetti";
 
-type UserPlan = 'free' | 'premium' | 'vip';
+const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
 
 // ─── Accordion Section Component ────────────────────────────────────────────
@@ -102,6 +103,7 @@ function TemplateCard({
   onSelect,
   locked = false,
   tier,
+  lockedLabel = 'Plan requis',
 }: {
   name: string;
   label: string;
@@ -111,6 +113,7 @@ function TemplateCard({
   onSelect: () => void;
   locked?: boolean;
   tier?: string;
+  lockedLabel?: string;
 }) {
   return (
     <button
@@ -133,7 +136,7 @@ function TemplateCard({
         {locked && (
           <div className="absolute inset-0 flex items-center justify-center bg-base-300/75 backdrop-blur-[1px]">
             <span className="inline-flex items-center gap-1 rounded-full bg-base-100 px-3 py-1 text-[10px] font-black text-base-content shadow">
-              <Lock className="h-3 w-3" /> Plan 3000F
+              <Lock className="h-3 w-3" /> {lockedLabel}
             </span>
           </div>
         )}
@@ -288,6 +291,45 @@ const VipAtlasMiniPreview = () => (
   </div>
 );
 
+const getTemplatePreview = (templateId: string) => {
+  const previews: Record<string, React.ReactNode> = {
+    classic: <ClassicMiniPreview />,
+    modern: <ModernMiniPreview />,
+    minimalist: <MinimalistMiniPreview />,
+    starter: <MinimalistMiniPreview />,
+    clean: <ModernMiniPreview />,
+    timeline: <ClassicMiniPreview />,
+    creative: <CreativeMiniPreview />,
+    executive: <ExecutiveMiniPreview />,
+    'pro-sidebar': <ClassicMiniPreview />,
+    'corporate-plus': <ExecutiveMiniPreview />,
+    elegant: <MinimalistMiniPreview />,
+    focus: <ModernMiniPreview />,
+    tech: <CreativeMiniPreview />,
+    'vip-signature': <VipSignatureMiniPreview />,
+    'vip-atlas': <VipAtlasMiniPreview />,
+    prestige: <VipSignatureMiniPreview />,
+    director: <ExecutiveMiniPreview />,
+    portfolio: <CreativeMiniPreview />,
+    luxe: <VipSignatureMiniPreview />,
+    elite: <VipAtlasMiniPreview />,
+  };
+
+  return previews[templateId] || <ClassicMiniPreview />;
+};
+
+const getTemplateBadge = (tier: UserPlan) => {
+  if (tier === 'premium') return '1000F';
+  if (tier === 'vip') return 'VIP';
+  return 'Gratuit';
+};
+
+const getLockedLabel = (tier: UserPlan) => {
+  if (tier === 'premium') return 'Plan 1000F';
+  if (tier === 'vip') return 'Plan 3000F';
+  return 'Gratuit';
+};
+
 export default function BuilderPage() {
   const params = useParams();
   const router = useRouter();
@@ -318,13 +360,13 @@ export default function BuilderPage() {
   const [editorTab, setEditorTab] = useState<'content' | 'design'>('content');
   const cvPreviewRef = useRef(null);
 
-  const buildVipPaymentUrl = () => {
-    return VIP_PAYMENT_URL;
+  const getPaymentUrlForTemplate = (templateName: string) => {
+    return getTemplateTier(templateName) === 'premium' ? PREMIUM_PAYMENT_URL : VIP_PAYMENT_URL;
   };
 
-  const handleSelectTemplate = (templateName: string, vipOnly = false) => {
-    if (vipOnly && userPlan !== 'vip') {
-      window.location.href = buildVipPaymentUrl();
+  const handleSelectTemplate = (templateName: string) => {
+    if (!canUseTemplate(userPlan, templateName)) {
+      window.location.href = getPaymentUrlForTemplate(templateName);
       return;
     }
     setTemplate(templateName);
@@ -450,7 +492,7 @@ export default function BuilderPage() {
   }
 
   // ── Editor Panel (shared between desktop & mobile) ─────────────────────────
-  const EditorPanel = () => (
+  const renderEditorPanel = () => (
     <div className="builder-editor flex flex-col h-full">
 
       {/* Header */}
@@ -609,6 +651,25 @@ export default function BuilderPage() {
                 <h3 className="font-bold text-sm text-base-content">Modèle de CV</h3>
               </div>
               <div className="grid grid-cols-2 gap-2">
+                {CV_TEMPLATES.map((templateOption) => {
+                  const locked = !canUseTemplate(userPlan, templateOption.id);
+                  return (
+                    <TemplateCard
+                      key={templateOption.id}
+                      name={templateOption.id}
+                      label={templateOption.label}
+                      description={templateOption.description}
+                      preview={getTemplatePreview(templateOption.id)}
+                      selected={template === templateOption.id}
+                      onSelect={() => handleSelectTemplate(templateOption.id)}
+                      locked={locked}
+                      tier={getTemplateBadge(templateOption.tier)}
+                      lockedLabel={getLockedLabel(templateOption.tier)}
+                    />
+                  );
+                })}
+              </div>
+              <div className="hidden">
                 <TemplateCard
                   name="classic"
                   label="Classique"
@@ -655,7 +716,7 @@ export default function BuilderPage() {
                   description="CV premium avec colonne signature et profil renforcÃ©"
                   preview={<VipSignatureMiniPreview />}
                   selected={template === 'vip-signature'}
-                  onSelect={() => handleSelectTemplate('vip-signature', true)}
+                  onSelect={() => handleSelectTemplate('vip-signature')}
                   locked={userPlan !== 'vip'}
                   tier="VIP"
                 />
@@ -665,7 +726,7 @@ export default function BuilderPage() {
                   description="EntÃªte puissant, blocs experts et rendu haut de gamme"
                   preview={<VipAtlasMiniPreview />}
                   selected={template === 'vip-atlas'}
-                  onSelect={() => handleSelectTemplate('vip-atlas', true)}
+                  onSelect={() => handleSelectTemplate('vip-atlas')}
                   locked={userPlan !== 'vip'}
                   tier="VIP"
                 />
@@ -802,7 +863,7 @@ export default function BuilderPage() {
       <div className="hidden lg:flex h-screen overflow-hidden">
         {/* Left editor pane */}
         <div className="w-[455px] h-full flex flex-col bg-[#08151a] border-r border-white/10 shrink-0">
-          <EditorPanel />
+          {renderEditorPanel()}
         </div>
         {/* Right preview pane */}
         <div className="flex-1 h-full overflow-hidden relative">
@@ -818,7 +879,7 @@ export default function BuilderPage() {
         {/* Mobile content area */}
         <div className="flex-1 overflow-hidden relative">
           {mobileTab === 'editor' ? (
-            <EditorPanel />
+            renderEditorPanel()
           ) : (
             <div className="h-full overflow-auto moncv-workspace-grid">
               {/* Mobile scale: 0.32 → CV 950×1200 → rendered ~304×384px visible */}
