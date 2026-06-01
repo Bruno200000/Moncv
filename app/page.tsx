@@ -44,9 +44,9 @@ export default function LandingPage() {
       <div className="absolute bottom-[10%] left-[10%] w-[50%] h-[50%] rounded-full bg-accent/5 blur-[130px] pointer-events-none" />
 
       {/* Header / Navbar */}
-      <header className="navbar bg-base-200/40 backdrop-blur-xl border-b border-base-content/10 px-6 sm:px-12 sticky top-0 z-50 transition-all duration-300">
-        <div className="flex-1">
-          <Link href="/" className="text-2xl font-extrabold italic select-none">
+      <header className="navbar min-h-16 flex-wrap gap-3 bg-base-200/40 backdrop-blur-xl border-b border-base-content/10 px-4 sm:px-6 lg:px-12 sticky top-0 z-50 transition-all duration-300">
+        <div className="min-w-0 flex-1">
+          <Link href="/" className="block truncate text-xl sm:text-2xl font-extrabold italic select-none">
             Mon<span className="text-primary bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">CV</span>
           </Link>
         </div>
@@ -56,15 +56,17 @@ export default function LandingPage() {
           <a href="#pricing" className="hover:text-primary transition-colors">Tarifs</a>
         </div>
 
-        <div className="flex-none ml-6 gap-2">
+        <div className="ml-auto flex max-w-full flex-none gap-2">
           {loading ? (
             <div className="w-20 h-8 rounded-lg bg-base-200 animate-pulse"></div>
           ) : session ? (
             <Link 
               href="/dashboard" 
-              className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none normal-case rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.03] active:scale-[0.97] transition-all"
+              className="btn btn-primary btn-sm sm:btn-md max-w-[58vw] sm:max-w-none bg-gradient-to-r from-primary to-secondary text-primary-content border-none normal-case rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.03] active:scale-[0.97] transition-all"
             >
-              Mon Tableau de Bord <ArrowRight className="w-4 h-4 ml-1" />
+              <span className="truncate sm:hidden">Tableau</span>
+              <span className="hidden truncate sm:inline">Mon Tableau de Bord</span>
+              <ArrowRight className="w-4 h-4 shrink-0 sm:ml-1" />
             </Link>
           ) : (
             <>
@@ -83,37 +85,37 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="hero min-h-[85vh] px-6 sm:px-12 relative flex items-center justify-center">
-        <div className="hero-content text-center max-w-4xl flex-col lg:flex-row gap-12 z-10 py-12">
-          <div>
-            <h1 className="text-5xl sm:text-7xl font-black leading-tight tracking-tight mb-6">
+      <section className="hero min-h-[85vh] px-4 sm:px-8 lg:px-12 relative flex items-center justify-center">
+        <div className="hero-content w-full text-center max-w-4xl flex-col lg:flex-row gap-12 z-10 py-10 sm:py-12">
+          <div className="min-w-0 w-full">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-tight tracking-tight mb-6 break-words">
               Créez un CV qui vous{' '}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 démarque
               </span>
             </h1>
             
-            <p className="text-lg sm:text-xl text-base-content/75 max-w-2xl mx-auto mb-8 leading-relaxed">
+            <p className="text-base sm:text-xl text-base-content/75 max-w-2xl mx-auto mb-8 leading-relaxed break-words">
               MonCV est l'outil ultime de création de curriculum vitae moderne. Choisissez un thème, complétez vos informations et téléchargez un PDF professionnel en quelques clics.
             </p>
             
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-4">
               <Link 
                 href={session ? "/dashboard" : "/register"} 
-                className="btn btn-primary btn-lg bg-gradient-to-r from-primary via-secondary to-accent text-primary-content border-none px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-[0.97] transition-all w-full sm:w-auto"
+                className="btn btn-primary min-h-12 h-auto sm:btn-lg bg-gradient-to-r from-primary via-secondary to-accent text-primary-content border-none px-5 sm:px-8 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.03] active:scale-[0.97] transition-all w-full sm:w-auto whitespace-normal text-center"
               >
                 Créer mon CV gratuitement <ArrowRight className="w-5 h-5 ml-1" />
               </Link>
               <a 
                 href="#pricing" 
-                className="btn btn-outline btn-lg rounded-2xl w-full sm:w-auto hover:bg-base-200/50 hover:text-base-content"
+                className="btn btn-outline min-h-12 h-auto sm:btn-lg rounded-2xl w-full sm:w-auto hover:bg-base-200/50 hover:text-base-content whitespace-normal"
               >
                 Consulter les tarifs
               </a>
             </div>
 
             {/* Float Screen Preview mockup */}
-            <div className="mt-16 relative mx-auto max-w-3xl rounded-2xl border border-base-content/10 bg-base-200/50 backdrop-blur-md p-4 shadow-2xl group overflow-hidden">
+            <div className="mt-12 sm:mt-16 relative mx-auto w-full max-w-3xl rounded-2xl border border-base-content/10 bg-base-200/50 backdrop-blur-md p-3 sm:p-4 shadow-2xl group overflow-hidden">
               <div className="absolute top-2 left-4 flex gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-error/30"></span>
                 <span className="w-3 h-3 rounded-full bg-warning/30"></span>
@@ -121,7 +123,7 @@ export default function LandingPage() {
               </div>
               <div className="absolute top-2 right-4 text-[10px] text-base-content/30 select-none">monCv.pdf</div>
               
-              <div className="mt-4 aspect-[16/9] w-full rounded-lg bg-base-300 border border-base-content/5 flex items-center justify-center p-8 relative overflow-hidden">
+              <div className="mt-4 aspect-[4/3] sm:aspect-[16/9] w-full rounded-lg bg-base-300 border border-base-content/5 flex items-center justify-center p-3 sm:p-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_26%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.1),transparent_24%)]" />
                 <div className="relative h-full w-full max-w-2xl overflow-hidden">
                   <div className="moncv-template-carousel flex h-full items-center gap-5">
@@ -189,11 +191,11 @@ export default function LandingPage() {
                 </div>
 
                 {/* Floating tags */}
-                <div className="absolute top-10 right-10 bg-base-200/90 border border-base-content/10 rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-md backdrop-blur animate-bounce duration-1000">
+                <div className="absolute top-4 right-4 hidden sm:flex bg-base-200/90 border border-base-content/10 rounded-xl px-3 py-2 text-xs font-semibold items-center gap-1.5 shadow-md backdrop-blur animate-bounce duration-1000">
                   <Zap className="w-3.5 h-3.5 text-secondary" /> Modèles en temps réel
                 </div>
 
-                <div className="absolute bottom-10 left-10 bg-base-200/90 border border-base-content/10 rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-md backdrop-blur animate-pulse">
+                <div className="absolute bottom-4 left-4 hidden sm:flex bg-base-200/90 border border-base-content/10 rounded-xl px-3 py-2 text-xs font-semibold items-center gap-1.5 shadow-md backdrop-blur animate-pulse">
                   <LayoutTemplate className="w-3.5 h-3.5 text-primary" /> 30+ Thèmes
                 </div>
               </div>
@@ -203,18 +205,18 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-base-200/50 border-y border-base-content/5 px-6 sm:px-12">
+      <section id="features" className="py-20 sm:py-24 bg-base-200/50 border-y border-base-content/5 px-4 sm:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-black mb-4">Pourquoi choisir MonCV ?</h2>
+            <h2 className="text-3xl sm:text-5xl font-black mb-4 break-words">Pourquoi choisir MonCV ?</h2>
             <p className="text-sm sm:text-base text-base-content/60 max-w-xl mx-auto">
               Une suite complète d'outils optimisés pour maximiser vos chances d'obtenir des entretiens.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Feature 1 */}
-            <div className="card bg-base-100 border border-base-content/5 p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
               <div className="p-3 bg-primary/10 text-primary w-fit rounded-xl mb-6">
                 <LayoutTemplate className="w-6 h-6" />
               </div>
@@ -225,7 +227,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="card bg-base-100 border border-base-content/5 p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
               <div className="p-3 bg-secondary/10 text-secondary w-fit rounded-xl mb-6">
                 <Zap className="w-6 h-6" />
               </div>
@@ -236,7 +238,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="card bg-base-100 border border-base-content/5 p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
               <div className="p-3 bg-accent/10 text-accent w-fit rounded-xl mb-6">
                 <Download className="w-6 h-6" />
               </div>
@@ -250,24 +252,24 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-6 sm:px-12 max-w-6xl mx-auto">
+      <section id="pricing" className="py-20 sm:py-24 px-4 sm:px-8 lg:px-12 max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-5xl font-black mb-4">Des tarifs simples et transparents</h2>
+          <h2 className="text-3xl sm:text-5xl font-black mb-4 break-words">Des tarifs simples et transparents</h2>
           <p className="text-sm sm:text-base text-base-content/60 max-w-xl mx-auto">
             Commencez gratuitement, puis passez à la vitesse supérieure quand vous en avez besoin.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           
           {/* Free Card */}
-          <div className="card bg-base-200 border border-base-content/10 p-8 rounded-3xl flex flex-col justify-between hover:shadow-lg transition-all">
+          <div className="card bg-base-200 border border-base-content/10 p-6 sm:p-8 rounded-3xl flex flex-col justify-between hover:shadow-lg transition-all break-words">
             <div>
               <span className="text-xs uppercase font-extrabold text-base-content/40 tracking-wider">Essai</span>
               <h3 className="text-2xl font-bold mt-1 mb-4">Gratuit</h3>
               
-              <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-extrabold">0 FCFA</span>
+              <div className="flex flex-wrap items-baseline gap-x-1 mb-6">
+                <span className="text-3xl sm:text-4xl font-extrabold">0 FCFA</span>
                 <span className="text-xs text-base-content/60 ml-1">/ à vie</span>
               </div>
               
@@ -278,13 +280,13 @@ export default function LandingPage() {
               <hr className="border-base-content/10 my-6" />
 
               <ul className="space-y-3.5 text-sm mb-8">
-                <li className="flex items-center gap-3 text-base-content/80">
+                <li className="flex items-start gap-3 text-base-content/80">
                   <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Jusqu'à 3 CVs maximum
                 </li>
-                <li className="flex items-center gap-3 text-base-content/80">
+                <li className="flex items-start gap-3 text-base-content/80">
                   <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Accès aux modèles standards
                 </li>
-                <li className="flex items-center gap-3 text-base-content/80">
+                <li className="flex items-start gap-3 text-base-content/80">
                   <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Export PDF standard
                 </li>
               </ul>
@@ -292,14 +294,14 @@ export default function LandingPage() {
 
             <Link 
               href={session ? "/dashboard" : "/register"} 
-              className="btn btn-outline btn-block rounded-xl normal-case"
+              className="btn btn-outline btn-block h-auto min-h-11 rounded-xl normal-case whitespace-normal"
             >
               {session ? "Accéder au tableau" : "Commencer l'essai"}
             </Link>
           </div>
 
           {/* Premium Card */}
-          <div className="card bg-base-200 border-2 border-primary p-8 rounded-3xl flex flex-col justify-between shadow-xl relative hover:shadow-2xl transition-all">
+          <div className="card bg-base-200 border-2 border-primary p-6 sm:p-8 rounded-3xl flex flex-col justify-between shadow-xl relative hover:shadow-2xl transition-all break-words">
             <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 badge badge-primary gap-1 py-3 px-4 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" /> Populaire
             </div>
@@ -308,8 +310,8 @@ export default function LandingPage() {
               <span className="text-xs uppercase font-extrabold text-primary tracking-wider mt-2 block">Premium</span>
               <h3 className="text-2xl font-bold mt-1 mb-4">Accès Plus</h3>
               
-              <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-extrabold text-primary">1 000 FCFA</span>
+              <div className="flex flex-wrap items-baseline gap-x-1 mb-6">
+                <span className="text-3xl sm:text-4xl font-extrabold text-primary">1 000 FCFA</span>
                 <span className="text-xs text-base-content/60 ml-1">/ mois</span>
               </div>
               
@@ -320,16 +322,16 @@ export default function LandingPage() {
               <hr className="border-base-content/10 my-6" />
 
               <ul className="space-y-3.5 text-sm mb-8">
-                <li className="flex items-center gap-3 text-base-content/85">
+                <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Jusqu'à 10 CVs simultanés
                 </li>
-                <li className="flex items-center gap-3 text-base-content/85">
+                <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Accès à tous les 30+ thèmes
                 </li>
-                <li className="flex items-center gap-3 text-base-content/85">
+                <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Duplication de CV en un clic
                 </li>
-                <li className="flex items-center gap-3 text-base-content/85">
+                <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Support client 24h par email
                 </li>
               </ul>
@@ -337,7 +339,7 @@ export default function LandingPage() {
 
             {session ? (
               session.plan === 'premium' ? (
-                <button disabled className="btn btn-primary btn-block rounded-xl normal-case">
+                <button disabled className="btn btn-primary btn-block h-auto min-h-11 rounded-xl normal-case whitespace-normal">
                   Forfait actuel
                 </button>
               ) : (
@@ -345,7 +347,7 @@ export default function LandingPage() {
                   href={buildPaymentUrl(PREMIUM_PAYMENT_URL, 'premium')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
+                  className="btn btn-primary h-auto min-h-11 bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10 whitespace-normal"
                 >
                   Payer 1 000 FCFA
                 </a>
@@ -353,7 +355,7 @@ export default function LandingPage() {
             ) : (
               <Link
                 href="/register?next=/dashboard&create=1"
-                className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
+                className="btn btn-primary h-auto min-h-11 bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10 whitespace-normal"
               >
                 Créer un compte pour payer
               </Link>
@@ -361,13 +363,13 @@ export default function LandingPage() {
           </div>
 
           {/* VIP Card */}
-          <div className="card bg-neutral text-neutral-content border border-neutral-content/10 p-8 rounded-3xl flex flex-col justify-between hover:shadow-lg transition-all">
+          <div className="card bg-neutral text-neutral-content border border-neutral-content/10 p-6 sm:p-8 rounded-3xl flex flex-col justify-between hover:shadow-lg transition-all break-words">
             <div>
               <span className="text-xs uppercase font-extrabold text-warning tracking-wider block">VIP</span>
               <h3 className="text-2xl font-bold mt-1 mb-4 text-warning">Accès Illimité</h3>
               
-              <div className="flex items-baseline mb-6">
-                <span className="text-4xl font-extrabold text-warning">3 000 FCFA</span>
+              <div className="flex flex-wrap items-baseline gap-x-1 mb-6">
+                <span className="text-3xl sm:text-4xl font-extrabold text-warning">3 000 FCFA</span>
                 <span className="text-xs text-neutral-content/60 ml-1">/ mois</span>
               </div>
               
@@ -378,16 +380,16 @@ export default function LandingPage() {
               <hr className="border-neutral-content/10 my-6" />
 
               <ul className="space-y-3.5 text-sm mb-8">
-                <li className="flex items-center gap-3 text-neutral-content/90">
+                <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> CVs illimités
                 </li>
-                <li className="flex items-center gap-3 text-neutral-content/90">
+                <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Accès aux thèmes VIP exclusifs
                 </li>
-                <li className="flex items-center gap-3 text-neutral-content/90">
+                <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Export PDF HD sans filigrane
                 </li>
-                <li className="flex items-center gap-3 text-neutral-content/90">
+                <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Support prioritaire VIP 24/7
                 </li>
               </ul>
@@ -395,7 +397,7 @@ export default function LandingPage() {
 
             {session ? (
               session.plan === 'vip' ? (
-                <button disabled className="btn btn-warning btn-block rounded-xl normal-case">
+                <button disabled className="btn btn-warning btn-block h-auto min-h-11 rounded-xl normal-case whitespace-normal">
                   Forfait actuel
                 </button>
               ) : (
@@ -403,7 +405,7 @@ export default function LandingPage() {
                   href={buildPaymentUrl(VIP_PAYMENT_URL, 'vip')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
+                  className="btn btn-warning h-auto min-h-11 text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01] whitespace-normal"
                 >
                   Payer 3 000 FCFA
                 </a>
@@ -411,7 +413,7 @@ export default function LandingPage() {
             ) : (
               <Link
                 href="/register?next=/dashboard&create=1"
-                className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
+                className="btn btn-warning h-auto min-h-11 text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01] whitespace-normal"
               >
                 Créer un compte pour payer
               </Link>
@@ -422,16 +424,16 @@ export default function LandingPage() {
       </section>
 
       {/* Call to Action Footer Area */}
-      <section className="py-20 px-6 sm:px-12 bg-gradient-to-br from-base-200 to-base-300 relative overflow-hidden text-center">
+      <section className="py-20 px-4 sm:px-8 lg:px-12 bg-gradient-to-br from-base-200 to-base-300 relative overflow-hidden text-center">
         <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
         <div className="max-w-2xl mx-auto z-10 relative">
-          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Prêt à propulser votre carrière ?</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 break-words">Prêt à propulser votre carrière ?</h2>
           <p className="text-sm sm:text-base text-base-content/60 mb-8 max-w-lg mx-auto">
             Créez votre compte en moins d'une minute et générez votre CV dès aujourd'hui. Aucune carte bancaire requise.
           </p>
           <Link 
             href={session ? "/dashboard" : "/register"} 
-            className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none px-8 rounded-2xl shadow-xl shadow-primary/20 normal-case"
+            className="btn btn-primary h-auto min-h-12 bg-gradient-to-r from-primary to-secondary text-primary-content border-none px-5 sm:px-8 rounded-2xl shadow-xl shadow-primary/20 normal-case whitespace-normal"
           >
             Commencer gratuitement <ArrowRight className="w-5 h-5 ml-1" />
           </Link>
