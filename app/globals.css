@@ -40,3 +40,122 @@
         transform: translateX(calc(-50% - 10px));
     }
 }
+
+.moncv-workspace-grid {
+    background-color: #08151a;
+    background-image:
+        linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+    background-size: 48px 48px, 48px 48px, 12px 12px, 12px 12px;
+}
+
+.builder-section {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.builder-section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    max-width: 100%;
+    border: 1px solid #ff7a55;
+    border-radius: 999px;
+    padding: 0.08rem 0.45rem;
+    color: #ff7a55;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.builder-section-badge {
+    display: inline-flex;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ff7a55;
+    color: #111827;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.builder-reset-button {
+    display: inline-flex;
+    width: 1.4rem;
+    height: 1.4rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ff7a55;
+    color: #111827;
+    transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.builder-reset-button:hover {
+    transform: rotate(18deg);
+    opacity: 0.9;
+}
+
+.builder-editor :is(.input, .textarea, .select, .file-input) {
+    min-height: 2rem;
+    border-color: rgba(148, 163, 184, 0.22);
+    background-color: #0b1b22;
+    color: #dbeafe;
+    font-size: 0.75rem;
+}
+
+.builder-editor :is(.input, .textarea, .select, .file-input):focus,
+.builder-editor :is(.input, .textarea, .select, .file-input):focus-within {
+    border-color: #ff7a55;
+    outline: 0;
+    box-shadow: 0 0 0 1px rgba(255, 122, 85, 0.35);
+}
+
+.builder-editor :is(input, textarea)::placeholder {
+    color: rgba(203, 213, 225, 0.72);
+}
+
+.builder-editor textarea.input,
+.builder-editor textarea.textarea {
+    min-height: 2.75rem;
+    padding-top: 0.65rem;
+    line-height: 1.35;
+}
+
+.builder-editor .file-input::file-selector-button {
+    min-height: 2rem;
+    background: #ff7a55;
+    color: #111827;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.builder-editor .btn-primary {
+    min-height: 2rem;
+    height: 2rem;
+    border-radius: 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .builder-editor {
+        width: 100%;
+    }
+
+    .builder-editor .flex:has(> .input),
+    .builder-editor .flex:has(> .textarea),
+    .builder-editor .flex:has(> .select) {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .builder-editor :is(.input, .textarea, .select, .file-input) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+}

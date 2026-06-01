@@ -42,7 +42,7 @@ function AccordionSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-base-content/10 overflow-hidden bg-base-100 shadow-sm">
+    <div className="builder-section">
       <div
         role="button"
         tabIndex={0}
@@ -53,15 +53,15 @@ function AccordionSection({
             setOpen((o) => !o);
           }
         }}
-        className="w-full flex items-center justify-between px-4 py-3 bg-base-200/60 hover:bg-base-200 transition-colors cursor-pointer select-none"
+        className="w-full flex items-center justify-between py-2 transition-colors cursor-pointer select-none"
       >
         <div className="flex items-center gap-2.5">
-          <span className={`p-1.5 rounded-lg bg-${color}/15`}>
-            <Icon className={`w-4 h-4 text-${color}`} />
+          <span className="builder-section-label">
+            <Icon className="w-3 h-3" />
+            <span>{title}</span>
           </span>
-          <span className="font-semibold text-sm text-base-content">{title}</span>
           {badge !== undefined && badge > 0 && (
-            <span className={`badge badge-sm badge-${color} text-[10px] font-bold`}>{badge}</span>
+            <span className="builder-section-badge">{badge}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -69,21 +69,21 @@ function AccordionSection({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onReset(); }}
-              className="btn btn-ghost btn-xs btn-circle opacity-60 hover:opacity-100"
+              className="builder-reset-button"
               title="Réinitialiser"
             >
               <RotateCw className="w-3.5 h-3.5" />
             </button>
           )}
           <ChevronDown
-            className={`w-4 h-4 text-base-content/50 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </div>
       </div>
       <div
         className={`transition-all duration-300 overflow-hidden ${open ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}
       >
-        <div className="px-4 py-4">{children}</div>
+        <div className="pb-5 pt-3">{children}</div>
       </div>
     </div>
   );
@@ -242,7 +242,7 @@ export default function BuilderPage() {
   const [file, setFile] = useState<File | null>(null);
   const [theme, setTheme] = useState<string>('cupcake');
   const [template, setTemplate] = useState<string>('classic');
-  const [zoom, setZoom] = useState<number>(163);
+  const [zoom, setZoom] = useState<number>(146);
   const [experiences, setExperience] = useState<Experience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [languages, setLanguages] = useState<Language[]>([]);
@@ -374,19 +374,19 @@ export default function BuilderPage() {
 
   // ── Editor Panel (shared between desktop & mobile) ─────────────────────────
   const EditorPanel = () => (
-    <div className="flex flex-col h-full">
+    <div className="builder-editor flex flex-col h-full">
 
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-base-content/10 bg-base-200/70 flex items-center justify-between gap-2 shrink-0">
+      <div className="px-4 py-3 border-b border-white/10 bg-[#071116] flex items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <Link href="/dashboard" className="btn btn-sm btn-ghost btn-circle shrink-0">
+          <Link href="/dashboard" className="btn btn-sm btn-ghost btn-circle shrink-0 text-slate-300 hover:bg-white/10">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <input
             type="text"
             value={cvName}
             onChange={(e) => setCvName(e.target.value)}
-            className="input input-sm input-ghost font-bold text-base p-0 h-auto border-none focus:outline-none focus:bg-base-300/50 px-2 rounded min-w-0 truncate max-w-[140px] sm:max-w-xs"
+            className="input input-sm input-ghost font-bold text-base p-0 h-auto border-none focus:outline-none focus:bg-white/10 px-2 rounded min-w-0 truncate max-w-[140px] sm:max-w-xs text-slate-100"
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -400,7 +400,7 @@ export default function BuilderPage() {
             {saveStatus === 'error' && <CloudOff className="w-4 h-4 text-error" />}
           </div>
           <button
-            className="btn btn-primary btn-sm gap-1.5"
+            className="btn btn-primary btn-sm gap-1.5 rounded-lg"
             onClick={() => (document.getElementById('modal_preview') as HTMLDialogElement)?.showModal()}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -410,13 +410,13 @@ export default function BuilderPage() {
       </div>
 
       {/* Sub-tabs: Content / Design */}
-      <div className="flex border-b border-base-content/10 bg-base-200/40 shrink-0">
+      <div className="flex border-b border-white/10 bg-[#08151a] shrink-0">
         <button
           onClick={() => setEditorTab('content')}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-all ${
             editorTab === 'content'
-              ? 'border-b-2 border-primary text-primary bg-base-100'
-              : 'text-base-content/50 hover:text-base-content hover:bg-base-200'
+              ? 'border-b-2 border-primary text-primary bg-white/[0.04]'
+              : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
           }`}
         >
           <PenLine className="w-3.5 h-3.5" /> Contenu
@@ -425,8 +425,8 @@ export default function BuilderPage() {
           onClick={() => setEditorTab('design')}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-all ${
             editorTab === 'design'
-              ? 'border-b-2 border-primary text-primary bg-base-100'
-              : 'text-base-content/50 hover:text-base-content hover:bg-base-200'
+              ? 'border-b-2 border-primary text-primary bg-white/[0.04]'
+              : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
           }`}
         >
           <Palette className="w-3.5 h-3.5" /> Design
@@ -438,7 +438,7 @@ export default function BuilderPage() {
 
         {/* ── CONTENT TAB ── */}
         {editorTab === 'content' && (
-          <div className="p-3 flex flex-col gap-3">
+          <div className="px-6 py-4 flex flex-col gap-3">
             <AccordionSection
               id="personal"
               icon={User}
@@ -510,11 +510,11 @@ export default function BuilderPage() {
             </AccordionSection>
 
             {/* Save indicator */}
-            <div className="flex items-center justify-between text-xs text-base-content/40 px-1 pb-2">
+            <div className="flex items-center justify-between text-xs text-slate-500 px-1 pb-2">
               <span>
                 {saveStatus === 'saved' ? '✓ Modifications enregistrées' : saveStatus === 'saving' ? 'Enregistrement...' : '⚠ Erreur de sauvegarde'}
               </span>
-              <button onClick={handleSave} disabled={saving} className="btn btn-xs btn-ghost btn-outline rounded-lg gap-1">
+              <button onClick={handleSave} disabled={saving} className="btn btn-xs btn-ghost btn-outline rounded-lg gap-1 border-white/15 text-slate-300 hover:bg-white/10">
                 <Save className="w-3 h-3" /> Forcer
               </button>
             </div>
@@ -523,11 +523,11 @@ export default function BuilderPage() {
 
         {/* ── DESIGN TAB ── */}
         {editorTab === 'design' && (
-          <div className="p-4 flex flex-col gap-6">
+          <div className="px-6 py-5 flex flex-col gap-6">
 
             {/* Template Selector */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 text-slate-100">
                 <LayoutTemplate className="w-4 h-4 text-primary" />
                 <h3 className="font-bold text-sm text-base-content">Modèle de CV</h3>
               </div>
@@ -577,7 +577,7 @@ export default function BuilderPage() {
 
             {/* Theme Selector */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 text-slate-100">
                 <Palette className="w-4 h-4 text-primary" />
                 <h3 className="font-bold text-sm text-base-content">Palette de couleurs</h3>
               </div>
@@ -627,13 +627,40 @@ export default function BuilderPage() {
   const CV_W = 950;
   const CV_H = 1200;
   const PreviewPanel = ({ isMobile = false }: { isMobile?: boolean }) => {
-    const scale = isMobile ? 0.28 : zoom / 200;
+    const scale = isMobile ? 0.33 : zoom / 200;
     const scaledW = CV_W * scale;
     const scaledH = CV_H * scale;
     return (
-      <div className="w-full h-full bg-base-300 bg-[url('/file.svg')] bg-cover bg-center overflow-auto relative">
+      <div className="moncv-workspace-grid w-full h-full overflow-auto relative">
         {!isMobile && (
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-base-100/80 backdrop-blur px-3 py-1.5 rounded-xl border border-base-content/10 shadow">
+          <div className="absolute top-4 right-5 z-20 flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 rounded-full bg-[#0b1b22]/90 px-3 py-1.5 shadow-lg ring-1 ring-white/10 backdrop-blur">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+              <input
+                type="range"
+                min={80}
+                max={180}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="range range-primary range-xs w-36"
+                aria-label="Zoom apercu"
+              />
+              <span className="w-10 text-right font-mono text-[11px] text-primary">{zoom}%</span>
+            </div>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="select select-bordered select-xs w-32 rounded-full border-white/10 bg-[#0b1b22]/90 text-xs text-slate-200 shadow-lg backdrop-blur"
+              aria-label="Theme du CV"
+            >
+              {themes.map((t) => (
+                <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {!isMobile && (
+          <div className="hidden">
             <Monitor className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-base-content/60">Aperçu en direct</span>
             <Sparkles className="w-3 h-3 text-warning animate-pulse" />
@@ -641,8 +668,8 @@ export default function BuilderPage() {
         )}
         {/* Container sized to the post-scale CV dimensions so scroll is correct */}
         <div
-          className="flex justify-center items-start py-8 px-4"
-          style={{ minHeight: `${scaledH + 64}px` }}
+          className="flex justify-center items-start px-4 pb-10 pt-16 sm:px-8"
+          style={{ minWidth: `${scaledW + 48}px`, minHeight: `${scaledH + 104}px` }}
         >
           <div
             style={{
@@ -677,7 +704,7 @@ export default function BuilderPage() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <div className="hidden lg:flex h-screen overflow-hidden">
         {/* Left editor pane */}
-        <div className="w-[380px] xl:w-[420px] h-full flex flex-col bg-base-200 border-r border-base-content/10 shrink-0">
+        <div className="w-[455px] h-full flex flex-col bg-[#08151a] border-r border-white/10 shrink-0">
           <EditorPanel />
         </div>
         {/* Right preview pane */}
@@ -689,14 +716,14 @@ export default function BuilderPage() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/*  MOBILE LAYOUT (< lg)                                                */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <div className="flex lg:hidden flex-col h-screen overflow-hidden bg-base-200">
+      <div className="flex lg:hidden flex-col h-screen overflow-hidden bg-[#08151a]">
 
         {/* Mobile content area */}
         <div className="flex-1 overflow-hidden relative">
           {mobileTab === 'editor' ? (
             <EditorPanel />
           ) : (
-            <div className="h-full overflow-auto bg-base-300">
+            <div className="h-full overflow-auto moncv-workspace-grid">
               {/* Mobile scale: 0.32 → CV 950×1200 → rendered ~304×384px visible */}
               <div
                 className="flex justify-center px-2 py-6"
@@ -732,12 +759,12 @@ export default function BuilderPage() {
         </div>
 
         {/* Mobile bottom navigation */}
-        <div className="shrink-0 border-t border-base-content/10 bg-base-100 safe-area-pb">
+        <div className="shrink-0 border-t border-white/10 bg-[#071116] safe-area-pb">
           <div className="flex">
             <button
               onClick={() => setMobileTab('editor')}
               className={`flex-1 flex flex-col items-center gap-0.5 py-3 text-[11px] font-semibold transition-colors ${
-                mobileTab === 'editor' ? 'text-primary border-t-2 border-primary' : 'text-base-content/40'
+                mobileTab === 'editor' ? 'text-primary border-t-2 border-primary' : 'text-slate-500'
               }`}
             >
               <PenLine className="w-5 h-5" />
@@ -746,7 +773,7 @@ export default function BuilderPage() {
             <button
               onClick={() => setMobileTab('preview')}
               className={`flex-1 flex flex-col items-center gap-0.5 py-3 text-[11px] font-semibold transition-colors ${
-                mobileTab === 'preview' ? 'text-primary border-t-2 border-primary' : 'text-base-content/40'
+                mobileTab === 'preview' ? 'text-primary border-t-2 border-primary' : 'text-slate-500'
               }`}
             >
               <FileText className="w-5 h-5" />
@@ -754,7 +781,7 @@ export default function BuilderPage() {
             </button>
             <button
               onClick={() => (document.getElementById('modal_preview') as HTMLDialogElement)?.showModal()}
-              className="flex-1 flex flex-col items-center gap-0.5 py-3 text-[11px] font-semibold text-base-content/40"
+              className="flex-1 flex flex-col items-center gap-0.5 py-3 text-[11px] font-semibold text-slate-500"
             >
               <Eye className="w-5 h-5" />
               Télécharger
