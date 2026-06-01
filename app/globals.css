@@ -160,6 +160,6 @@
     }
 }
 
-.cv-font-adjust :is(p, li, span, h1, h2, h3, h4) {
-    zoom: var(--cv-font-scale, 1);
+.cv-font-adjust {
+    font-size: calc(1rem * var(--cv-font-scale, 1));
 }

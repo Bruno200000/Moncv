@@ -792,14 +792,14 @@ export default function BuilderPage() {
                   <button
                     type="button"
                     className="btn btn-xs btn-outline border-white/15 text-slate-200"
-                    onClick={() => setFontSize((value) => Math.max(80, value - 5))}
+                    onClick={() => setFontSize((value) => Math.max(85, value - 5))}
                   >
                     A-
                   </button>
                   <input
                     type="range"
-                    min={80}
-                    max={125}
+                    min={85}
+                    max={105}
                     step={5}
                     value={fontSize}
                     onChange={(e) => setFontSize(Number(e.target.value))}
@@ -809,7 +809,7 @@ export default function BuilderPage() {
                   <button
                     type="button"
                     className="btn btn-xs btn-outline border-white/15 text-slate-200"
-                    onClick={() => setFontSize((value) => Math.min(125, value + 5))}
+                    onClick={() => setFontSize((value) => Math.min(105, value + 5))}
                   >
                     A+
                   </button>
@@ -992,7 +992,7 @@ export default function BuilderPage() {
       {/*  MODAL — PDF Preview & Download                                      */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <dialog id="modal_preview" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box w-full max-w-5xl">
+        <div className="modal-box w-[96vw] max-w-[1180px]">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3">✕</button>
           </form>
