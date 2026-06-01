@@ -245,6 +245,8 @@ export const db = {
       usersThisMonth,
       totalCvs: data.cvs.length,
       cvsThisMonth,
+      totalVisits: 0,
+      totalDownloads: 0,
       revenueMonth: data.users.reduce((sum, user) => sum + monthlyPrices[user.plan], 0),
       plans: {
         free: data.users.filter((user) => user.plan === 'free').length,

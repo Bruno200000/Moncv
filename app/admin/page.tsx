@@ -10,6 +10,8 @@ type AdminStats = {
   usersThisMonth: number;
   totalCvs: number;
   cvsThisMonth: number;
+  totalVisits?: number;
+  totalDownloads?: number;
   revenueMonth: number;
   plans: { free: number; premium: number; vip: number };
   recentUsers: Array<{
@@ -31,17 +33,24 @@ export default function AdminPage() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const res = await fetch('/api/admin/stats');
+        const res = await fetch('/api/admin/stats', { cache: 'no-store' });
         if (res.status === 401) {
           router.replace('/login');
           return;
         }
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Impossible de charger l'espace admin.");
+        const rawBody = await res.text();
+        let data: { error?: string; stats?: AdminStats } | null = null;
+        try {
+          data = rawBody ? JSON.parse(rawBody) : null;
+        } catch {
+          throw new Error("Réponse admin invalide. Veuillez vous reconnecter.");
+        }
+        if (!res.ok) throw new Error(data?.error || "Impossible de charger l'espace admin.");
+        if (!data?.stats) throw new Error("Réponse admin vide. Veuillez vous reconnecter.");
         setStats(data.stats);
       } catch (err: any) {
-        setError(err.message || "Erreur de chargement admin.");
+        setError(err.message || "Erreur de chargement admin. Veuillez vous reconnecter.");
       } finally {
         setLoading(false);
       }
@@ -95,7 +104,7 @@ export default function AdminPage() {
           <StatCard label="Inscrits" value={stats.totalUsers} icon={Users} tone="text-primary" />
           <StatCard label="CV créés" value={stats.totalCvs} icon={FileText} tone="text-success" />
           <StatCard label="Revenu du mois" value={`${stats.revenueMonth.toLocaleString('fr-FR')} FCFA`} icon={TrendingUp} tone="text-warning" />
-          <StatCard label="Nouveaux inscrits" value={stats.usersThisMonth} icon={BarChart3} tone="text-info" />
+          <StatCard label="Visites" value={stats.totalVisits ?? 0} icon={BarChart3} tone="text-info" />
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
