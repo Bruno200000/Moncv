@@ -470,7 +470,7 @@ export default function BuilderPage() {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: "portrait", unit: 'mm', format: "A4" });
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${cvName.replace(/\s+/g, '_')}.pdf`);
       (document.getElementById('modal_preview') as HTMLDialogElement)?.close();
@@ -833,10 +833,10 @@ export default function BuilderPage() {
   );
 
   // ── Preview Panel ──────────────────────────────────────────────────────────
-  // CV is 950px wide x 1200px tall. We need to compute real height after scale
+  // CV preview uses an A4 ratio: 794px x 1123px.
   // so the scroll container fills properly and doesn't clip the content.
-  const CV_W = 950;
-  const CV_H = 1200;
+  const CV_W = 794;
+  const CV_H = 1123;
   const PreviewPanel = ({ isMobile = false }: { isMobile?: boolean }) => {
     const scale = isMobile ? 0.33 : zoom / 200;
     const scaledW = CV_W * scale;
@@ -936,18 +936,18 @@ export default function BuilderPage() {
             renderEditorPanel()
           ) : (
             <div className="h-full overflow-auto moncv-workspace-grid">
-              {/* Mobile scale: 0.32 → CV 950×1200 → rendered ~304×384px visible */}
+              {/* Mobile A4 preview: 794x1123 scaled down. */}
               <div
                 className="flex justify-center px-2 py-6"
-                style={{ minHeight: `${1200 * 0.32 + 80}px` }}
+                style={{ minHeight: `${1123 * 0.36 + 80}px` }}
               >
                 <div
                   style={{
-                    transform: 'scale(0.32)',
+                    transform: 'scale(0.36)',
                     transformOrigin: 'top center',
-                    width: '950px',
-                    height: '1200px',
-                    marginBottom: `${1200 * 0.32 - 1200}px`,
+                    width: '794px',
+                    height: '1123px',
+                    marginBottom: `${1123 * 0.36 - 1123}px`,
                   }}
                 >
                   <CVPreview

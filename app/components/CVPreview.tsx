@@ -77,7 +77,7 @@ const CVPreview: React.FC<Props> = ({
     // Créer une URL temporaire sécurisée pour l'image de profil
     useEffect(() => {
         if (!file) {
-            setImageSrc('');
+            setImageSrc(personalDetails.photoUrl || '');
             return;
         }
         
@@ -96,7 +96,7 @@ const CVPreview: React.FC<Props> = ({
                 } catch (e) {}
             }
         };
-    }, [file]);
+    }, [file, personalDetails.photoUrl]);
 
     // Rendu du Modèle Moderne (Header pleine largeur, colonnes en bas)
     const renderModernTemplate = () => {
@@ -1120,7 +1120,7 @@ const CVPreview: React.FC<Props> = ({
     }
 
     return (
-        <div ref={ref} className={`flex w-[950px] h-[1200px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
+        <div ref={ref} className={`flex w-[794px] h-[1123px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
           <div className="cv-font-adjust h-full w-full" style={{ ['--cv-font-scale' as string]: Math.max(80, Math.min(125, fontSize)) / 100 }}>
             {template === 'modern' && renderModernTemplate()}
             {template === 'minimalist' && renderMinimalistTemplate()}

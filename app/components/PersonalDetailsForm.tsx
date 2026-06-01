@@ -17,6 +17,14 @@ const PersonalDetailsForm: React.FC<Props> = ({ personalDetails, setPersonalDeta
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
       setFile(selectedFile)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPersonalDetails({
+          ...personalDetails,
+          photoUrl: typeof reader.result === 'string' ? reader.result : personalDetails.photoUrl,
+        })
+      }
+      reader.readAsDataURL(selectedFile)
     }
   }
 
