@@ -30,8 +30,7 @@ export default function LoginPage() {
         throw new Error(data.error || "Une erreur est survenue lors de la connexion.");
       }
 
-      // Rediriger vers le tableau de bord en cas de succès
-      router.push('/dashboard');
+      router.push(data.redirectTo || '/dashboard');
       router.refresh();
     } catch (err: any) {
       setError(err.message);

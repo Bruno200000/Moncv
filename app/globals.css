@@ -22,3 +22,21 @@
     -ms-overflow-style: none; 
     scrollbar-width: none; 
 }
+
+.moncv-template-carousel {
+    width: max-content;
+    animation: moncv-template-slide 18s linear infinite;
+}
+
+.moncv-template-carousel:hover {
+    animation-play-state: paused;
+}
+
+@keyframes moncv-template-slide {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(calc(-50% - 10px));
+    }
+}

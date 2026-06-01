@@ -121,36 +121,72 @@ export default function LandingPage() {
                 <span className="w-3 h-3 rounded-full bg-warning/30"></span>
                 <span className="w-3 h-3 rounded-full bg-success/30"></span>
               </div>
-              <div className="absolute top-2 right-4 text-[10px] text-base-content/30 select-none">cv-builder-workspace.pdf</div>
+              <div className="absolute top-2 right-4 text-[10px] text-base-content/30 select-none">monCv.pdf</div>
               
               <div className="mt-4 aspect-[16/9] w-full rounded-lg bg-base-300 border border-base-content/5 flex items-center justify-center p-8 relative overflow-hidden">
-                {/* Simulated CV elements inside preview */}
-                <div className="w-2/3 h-full bg-base-100 rounded-lg shadow-lg flex p-4 text-left gap-4 scale-[0.95] sm:scale-100 transition-transform">
-                  <div className="w-1/3 border-r border-base-content/10 pr-3 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-full bg-primary/20 mb-3 animate-pulse"></div>
-                      <div className="h-4 w-full bg-base-300 rounded mb-2"></div>
-                      <div className="h-3 w-3/4 bg-base-200 rounded"></div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="h-2 w-full bg-base-200 rounded"></div>
-                      <div className="h-2 w-5/6 bg-base-200 rounded"></div>
-                      <div className="h-2 w-2/3 bg-base-200 rounded"></div>
-                    </div>
-                  </div>
-                  <div className="w-2/3 flex flex-col justify-between pl-1">
-                    <div>
-                      <div className="h-5 w-2/3 bg-primary/20 rounded mb-4"></div>
-                      <div className="space-y-2">
-                        <div className="h-3 w-full bg-base-300 rounded"></div>
-                        <div className="h-3 w-5/6 bg-base-200 rounded"></div>
-                        <div className="h-3 w-4/5 bg-base-200 rounded"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_26%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.1),transparent_24%)]" />
+                <div className="relative h-full w-full max-w-2xl overflow-hidden">
+                  <div className="moncv-template-carousel flex h-full items-center gap-5">
+                    {[
+                      { name: 'Executive', side: true, soft: 'bg-primary/15', medium: 'bg-primary/30', strong: 'bg-primary/40', line: 'bg-primary/50', title: 'bg-primary/55', panel: 'bg-primary/20' },
+                      { name: 'Minimal', side: false, soft: 'bg-accent/15', medium: 'bg-accent/30', strong: 'bg-accent/35', line: 'bg-accent/40', title: 'bg-accent/55', panel: 'bg-accent/20' },
+                      { name: 'Corporate', side: true, soft: 'bg-secondary/15', medium: 'bg-secondary/30', strong: 'bg-secondary/40', line: 'bg-secondary/50', title: 'bg-secondary/55', panel: 'bg-secondary/20' },
+                      { name: 'Executive', side: true, soft: 'bg-primary/15', medium: 'bg-primary/30', strong: 'bg-primary/40', line: 'bg-primary/50', title: 'bg-primary/55', panel: 'bg-primary/20' },
+                      { name: 'Minimal', side: false, soft: 'bg-accent/15', medium: 'bg-accent/30', strong: 'bg-accent/35', line: 'bg-accent/40', title: 'bg-accent/55', panel: 'bg-accent/20' },
+                      { name: 'Corporate', side: true, soft: 'bg-secondary/15', medium: 'bg-secondary/30', strong: 'bg-secondary/40', line: 'bg-secondary/50', title: 'bg-secondary/55', panel: 'bg-secondary/20' },
+                    ].map((model, index) => (
+                      <div
+                        key={`${model.name}-${index}`}
+                        className="h-[88%] w-[190px] shrink-0 rounded-lg bg-base-100 p-3 text-left shadow-2xl ring-1 ring-base-content/10"
+                      >
+                        {model.side ? (
+                          <div className="flex h-full gap-3">
+                            <div className={`w-[38%] rounded-md ${model.soft} p-2`}>
+                              <div className={`mx-auto mb-3 h-9 w-9 rounded-full ${model.strong}`} />
+                              <div className={`mb-2 h-2 rounded ${model.line}`} />
+                              <div className="mb-1.5 h-1.5 rounded bg-base-content/20" />
+                              <div className="mb-1.5 h-1.5 w-4/5 rounded bg-base-content/15" />
+                              <div className="mt-5 space-y-1.5">
+                                <div className={`h-1.5 rounded ${model.line}`} />
+                                <div className={`h-1.5 w-3/4 rounded ${model.medium}`} />
+                              </div>
+                            </div>
+                            <div className="flex-1 py-1">
+                              <div className="mb-1 h-3 rounded bg-base-content/35" />
+                              <div className={`mb-4 h-2 w-2/3 rounded ${model.title}`} />
+                              <div className="space-y-1.5">
+                                <div className="h-1.5 rounded bg-base-content/20" />
+                                <div className="h-1.5 rounded bg-base-content/15" />
+                                <div className="h-1.5 w-4/5 rounded bg-base-content/15" />
+                              </div>
+                              <div className="mt-5 space-y-2">
+                                <div className={`h-2 w-1/2 rounded ${model.line}`} />
+                                <div className="h-1.5 rounded bg-base-content/15" />
+                                <div className="h-1.5 w-5/6 rounded bg-base-content/15" />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex h-full flex-col items-center p-2">
+                            <div className={`mb-3 h-10 w-10 rounded-full ${model.strong}`} />
+                            <div className="mb-1.5 h-3 w-3/4 rounded bg-base-content/35" />
+                            <div className={`mb-5 h-2 w-1/2 rounded ${model.title}`} />
+                            <div className="w-full space-y-1.5">
+                              <div className="h-1.5 rounded bg-base-content/20" />
+                              <div className="h-1.5 rounded bg-base-content/15" />
+                              <div className="h-1.5 w-5/6 rounded bg-base-content/15" />
+                            </div>
+                            <div className="mt-5 grid w-full grid-cols-2 gap-2">
+                              <div className={`h-8 rounded-md ${model.panel}`} />
+                              <div className="h-8 rounded-md bg-base-200" />
+                            </div>
+                            <span className="mt-auto text-[10px] font-bold uppercase tracking-wide text-base-content/35">
+                              {model.name}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <div className="h-4 w-12 rounded bg-secondary/20"></div>
-                      <div className="h-4 w-12 rounded bg-accent/20"></div>
-                    </div>
+                    ))}
                   </div>
                 </div>
 

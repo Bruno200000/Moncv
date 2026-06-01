@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword, signToken } from '@/lib/auth';
+import { isAdminCredentials, signAdminToken } from '@/lib/adminAuth';
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,25 @@ export async function POST(request: Request) {
     }
 
     const emailLower = email.toLowerCase().trim();
+
+    if (isAdminCredentials(emailLower, password)) {
+      const response = NextResponse.json({
+        success: true,
+        admin: true,
+        redirectTo: '/admin',
+      });
+
+      response.cookies.set('moncv_admin', signAdminToken(), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 8,
+      });
+
+      return response;
+    }
+
     const user = db.getUserByEmail(emailLower);
 
     if (!user) {

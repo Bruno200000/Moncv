@@ -226,5 +226,43 @@ export const db = {
     }
 
     writeDb(data);
+  },
+
+  getAdminStats() {
+    const data = readDb();
+    const now = new Date();
+    const monthKey = getCurrentMonthKey(now);
+    const usersThisMonth = data.users.filter((user) => (
+      getCurrentMonthKey(new Date(user.createdAt)) === monthKey
+    )).length;
+    const cvsThisMonth = data.cvs.filter((cv) => (
+      getCurrentMonthKey(new Date(cv.createdAt)) === monthKey
+    )).length;
+    const monthlyPrices = { free: 0, premium: 1000, vip: 3000 };
+
+    return {
+      totalUsers: data.users.length,
+      usersThisMonth,
+      totalCvs: data.cvs.length,
+      cvsThisMonth,
+      revenueMonth: data.users.reduce((sum, user) => sum + monthlyPrices[user.plan], 0),
+      plans: {
+        free: data.users.filter((user) => user.plan === 'free').length,
+        premium: data.users.filter((user) => user.plan === 'premium').length,
+        vip: data.users.filter((user) => user.plan === 'vip').length,
+      },
+      recentUsers: data.users
+        .slice()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 8)
+        .map((user) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          plan: user.plan,
+          createdAt: user.createdAt,
+          cvsCount: data.cvs.filter((cv) => cv.userId === user.id).length,
+        })),
+    };
   }
 };
