@@ -471,15 +471,33 @@ export default function BuilderPage() {
   ];
 
   const handleDownloadPdf = async () => {
-    const element = cvPreviewRef.current;
+    const element = cvPreviewRef.current as HTMLElement | null;
     if (!element) return;
     try {
-      const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+      const images = Array.from(element.querySelectorAll('img'));
+      await Promise.all(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        });
+      }));
+
+      const canvas = await html2canvas(element, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+      });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: "portrait", unit: 'mm', format: "A4" });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const imageHeight = Math.min(pdfHeight, (canvas.height * pdfWidth) / canvas.width);
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
       pdf.save(`${cvName.replace(/\s+/g, '_')}.pdf`);
       (document.getElementById('modal_preview') as HTMLDialogElement)?.close();
       confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, zIndex: 9999 });
@@ -992,36 +1010,33 @@ export default function BuilderPage() {
       {/*  MODAL — PDF Preview & Download                                      */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <dialog id="modal_preview" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box w-[96vw] max-w-[1180px]">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3">✕</button>
+        <div className="modal-box relative h-[88vh] max-h-[88vh] w-[96vw] max-w-[1160px] overflow-hidden rounded-2xl bg-[#0b171d] p-0 lg:w-[calc(100vw-12rem)]">
+          <form method="dialog" className="relative z-30">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-5 top-4 text-slate-300 hover:bg-white/10">x</button>
           </form>
-          <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" /> Prévisualisation & Téléchargement
-          </h3>
-          <p className="text-sm text-base-content/50 mb-5">Vérifiez votre CV avant de le télécharger en PDF.</p>
-
-          <div className="flex justify-end mb-4">
-            <button onClick={handleDownloadPdf} className="btn btn-primary gap-2">
-              <Save className="w-4 h-4" /> Télécharger PDF
+          <div className="absolute left-0 right-0 top-0 z-20 flex h-28 items-center justify-end bg-[#0b171d] px-6 pt-4 sm:px-8">
+            <button onClick={handleDownloadPdf} className="btn btn-primary h-12 rounded-xl px-5 font-bold text-primary-content shadow-lg shadow-primary/20 sm:px-6">
+              Télécharger <Save className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="w-full overflow-auto flex justify-center bg-base-200 rounded-xl p-4">
-            <CVPreview
-              personalDetails={personalDetails}
-              file={file}
-              theme={theme}
-              template={template}
-              fontSize={fontSize}
-              experiences={experiences}
-              educations={educations}
-              languages={languages}
-              hobbies={hobbies}
-              skills={skills}
-              download={true}
-              ref={cvPreviewRef}
-            />
+          <div className="absolute inset-x-0 bottom-0 top-28 overflow-auto px-4 pb-10 sm:px-10 lg:px-20">
+            <div className="flex min-w-max justify-center">
+              <CVPreview
+                personalDetails={personalDetails}
+                file={file}
+                theme={theme}
+                template={template}
+                fontSize={fontSize}
+                experiences={experiences}
+                educations={educations}
+                languages={languages}
+                hobbies={hobbies}
+                skills={skills}
+                download={true}
+                ref={cvPreviewRef}
+              />
+            </div>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop"><button>Fermer</button></form>

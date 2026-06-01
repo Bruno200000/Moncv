@@ -1120,7 +1120,7 @@ const CVPreview: React.FC<Props> = ({
     }
 
     return (
-        <div ref={ref} className={`flex w-[950px] h-[1344px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
+        <div ref={ref} className={`flex w-[950px] h-[1344px] relative overflow-hidden bg-base-100 ${download ? 'mb-10 shadow-none' : 'shadow-2xl'}`} data-theme={theme}>
           <div className="cv-font-adjust h-full w-full" style={{ ['--cv-font-scale' as string]: Math.max(85, Math.min(105, fontSize)) / 100 }}>
             {template === 'modern' && renderModernTemplate()}
             {template === 'minimalist' && renderMinimalistTemplate()}
