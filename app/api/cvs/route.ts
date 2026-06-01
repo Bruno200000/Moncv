@@ -13,7 +13,7 @@ export async function GET() {
       );
     }
 
-    const cvs = db.getCVs(user.id);
+    const cvs = await db.getCVs(user.id);
     return NextResponse.json({ cvs });
   } catch (error) {
     console.error("Erreur de récupération des CVs:", error);
@@ -36,14 +36,16 @@ export async function POST(request: Request) {
     }
 
     let name = "Mon CV";
+    let template = "classic";
     try {
       const body = await request.json();
       if (body.name) name = body.name;
+      if (body.template) template = body.template;
     } catch (e) {
       // Ignorer si pas de corps JSON (par exemple création par défaut)
     }
 
-    const newCv = db.createCV(user.id, name);
+    const newCv = await db.createCV(user.id, name, template);
 
     return NextResponse.json({
       success: true,

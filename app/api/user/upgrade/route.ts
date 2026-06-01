@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     // Mettre à jour le plan de l'utilisateur dans la base
-    const updatedUser = db.updateUserPlan(user.id, plan);
+    const updatedUser = await db.updateUserPlan(user.id, plan);
 
     return NextResponse.json({
       success: true,

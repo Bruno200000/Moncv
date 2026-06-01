@@ -1,8 +1,6 @@
-import fs from 'fs';
-import path from 'path';
+import { Pool } from 'pg';
 import { PersonalDetails, Experience, Education, Skill, Language, Hobby } from '@/type';
 
-// Types de données pour notre base locale
 export interface User {
   id: string;
   name: string;
@@ -23,250 +21,364 @@ export interface CV {
   skills: Skill[];
   hobbies: Hobby[];
   theme: string;
-  template?: string; // classic | modern | minimalist
+  template?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+type Plan = User['plan'];
+
+let pool: Pool | null = null;
+let schemaReady: Promise<void> | null = null;
 
 export function getCurrentMonthKey(date = new Date()): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-interface DatabaseSchema {
-  users: User[];
-  cvs: CV[];
+function getPool() {
+  if (pool) return pool;
+
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL manquant. Ajoutez votre URL Neon dans les variables d environnement Vercel.');
+  }
+
+  pool = new Pool({
+    connectionString,
+    ssl: connectionString.includes('sslmode=require')
+      ? { rejectUnauthorized: false }
+      : undefined,
+  });
+
+  return pool;
 }
 
-const DB_DIR = process.env.VERCEL
-  ? path.join('/tmp', 'moncv-data')
-  : path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'db.json');
+async function ensureSchema() {
+  if (!schemaReady) {
+    schemaReady = getPool().query(`
+      CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-// Initialise la base de données si elle n'existe pas
-function initDb() {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
+      CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'premium', 'vip')),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS cvs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name TEXT NOT NULL DEFAULT 'Mon CV',
+        personal_details JSONB NOT NULL DEFAULT '{}'::jsonb,
+        experiences JSONB NOT NULL DEFAULT '[]'::jsonb,
+        educations JSONB NOT NULL DEFAULT '[]'::jsonb,
+        languages JSONB NOT NULL DEFAULT '[]'::jsonb,
+        skills JSONB NOT NULL DEFAULT '[]'::jsonb,
+        hobbies JSONB NOT NULL DEFAULT '[]'::jsonb,
+        theme TEXT NOT NULL DEFAULT 'cupcake',
+        template TEXT NOT NULL DEFAULT 'classic',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        cv_id UUID REFERENCES cvs(id) ON DELETE SET NULL,
+        type TEXT NOT NULL CHECK (type IN ('visit', 'download')),
+        path TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+      CREATE INDEX IF NOT EXISTS idx_cvs_user_id ON cvs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_cvs_created_at ON cvs(created_at);
+      CREATE INDEX IF NOT EXISTS idx_analytics_type ON analytics_events(type);
+      CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics_events(created_at);
+
+      CREATE OR REPLACE FUNCTION set_updated_at()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.updated_at = NOW();
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+
+      DROP TRIGGER IF EXISTS cvs_set_updated_at ON cvs;
+      CREATE TRIGGER cvs_set_updated_at
+      BEFORE UPDATE ON cvs
+      FOR EACH ROW
+      EXECUTE FUNCTION set_updated_at();
+    `).then(() => undefined);
   }
-  if (!fs.existsSync(DB_FILE)) {
-    const initialData: DatabaseSchema = { users: [], cvs: [] };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-  }
+
+  return schemaReady;
 }
 
-// Lit les données depuis le fichier JSON
-function readDb(): DatabaseSchema {
-  initDb();
-  try {
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error("Erreur de lecture de la base locale, réinitialisation...", error);
-    return { users: [], cvs: [] };
-  }
-}
-
-// Écrit les données de manière atomique (fichier temporaire puis renommage)
-function writeDb(data: DatabaseSchema) {
-  initDb();
-  const tempFile = `${DB_FILE}.tmp`;
-  try {
-    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf-8');
-    fs.renameSync(tempFile, DB_FILE);
-  } catch (error) {
-    console.error("Erreur lors de l'écriture dans la base locale:", error);
-    if (fs.existsSync(tempFile)) {
-      try { fs.unlinkSync(tempFile); } catch (e) {}
+function jsonValue<T>(value: unknown, fallback: T): T {
+  if (!value) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return fallback;
     }
-    throw new Error("Impossible d'écrire dans la base de données.");
   }
+  return value as T;
 }
 
-// Fonctions d'accès pour les utilisateurs
+function mapUser(row: any): User {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    passwordHash: row.password_hash,
+    plan: row.plan,
+    createdAt: new Date(row.created_at).toISOString(),
+  };
+}
+
+function mapCv(row: any): CV {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    personalDetails: jsonValue(row.personal_details, {
+      fullName: '',
+      email: '',
+      phone: '',
+      address: '',
+      photoUrl: '',
+      postSeeking: '',
+      description: '',
+    }),
+    experiences: jsonValue(row.experiences, []),
+    educations: jsonValue(row.educations, []),
+    languages: jsonValue(row.languages, []),
+    skills: jsonValue(row.skills, []),
+    hobbies: jsonValue(row.hobbies, []),
+    theme: row.theme,
+    template: row.template,
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
 export const db = {
-  // --- Gestion des Utilisateurs ---
-  
-  getUsers(): User[] {
-    return readDb().users;
+  async getUsers(): Promise<User[]> {
+    await ensureSchema();
+    const { rows } = await getPool().query('SELECT * FROM users ORDER BY created_at DESC');
+    return rows.map(mapUser);
   },
 
-  getUserById(id: string): User | undefined {
-    return this.getUsers().find(u => u.id === id);
+  async getUserById(id: string): Promise<User | undefined> {
+    await ensureSchema();
+    const { rows } = await getPool().query('SELECT * FROM users WHERE id = $1 LIMIT 1', [id]);
+    return rows[0] ? mapUser(rows[0]) : undefined;
   },
 
-  getUserByEmail(email: string): User | undefined {
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    await ensureSchema();
     const emailLower = email.toLowerCase().trim();
-    return this.getUsers().find(u => u.email.toLowerCase() === emailLower);
+    const { rows } = await getPool().query('SELECT * FROM users WHERE lower(email) = $1 LIMIT 1', [emailLower]);
+    return rows[0] ? mapUser(rows[0]) : undefined;
   },
 
-  createUser(user: Omit<User, 'id' | 'plan' | 'createdAt'>): User {
-    const data = readDb();
-    
-    // Vérifier les doublons
+  async createUser(user: Omit<User, 'id' | 'plan' | 'createdAt'>): Promise<User> {
+    await ensureSchema();
     const emailLower = user.email.toLowerCase().trim();
-    if (data.users.some(u => u.email.toLowerCase() === emailLower)) {
-      throw new Error("Cet email est déjà enregistré.");
+    try {
+      const { rows } = await getPool().query(
+        `INSERT INTO users (name, email, password_hash)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [user.name, emailLower, user.passwordHash]
+      );
+      return mapUser(rows[0]);
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new Error('Cet email est déjà enregistré.');
+      }
+      throw error;
+    }
+  },
+
+  async updateUserPlan(userId: string, plan: Plan): Promise<User> {
+    await ensureSchema();
+    const { rows } = await getPool().query(
+      `UPDATE users SET plan = $1 WHERE id = $2 RETURNING *`,
+      [plan, userId]
+    );
+    if (!rows[0]) throw new Error('Utilisateur introuvable.');
+    return mapUser(rows[0]);
+  },
+
+  async getCVs(userId: string): Promise<CV[]> {
+    await ensureSchema();
+    const { rows } = await getPool().query(
+      'SELECT * FROM cvs WHERE user_id = $1 ORDER BY updated_at DESC',
+      [userId]
+    );
+    return rows.map(mapCv);
+  },
+
+  async getCVsCreatedThisMonth(userId: string): Promise<CV[]> {
+    await ensureSchema();
+    const { rows } = await getPool().query(
+      `SELECT * FROM cvs
+       WHERE user_id = $1
+       AND created_at >= date_trunc('month', NOW())
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+    return rows.map(mapCv);
+  },
+
+  async getCV(id: string): Promise<CV | undefined> {
+    await ensureSchema();
+    const { rows } = await getPool().query('SELECT * FROM cvs WHERE id = $1 LIMIT 1', [id]);
+    return rows[0] ? mapCv(rows[0]) : undefined;
+  },
+
+  async createCV(userId: string, name: string, template = 'classic'): Promise<CV> {
+    await ensureSchema();
+    const user = await this.getUserById(userId);
+    if (!user) throw new Error('Utilisateur non authentifié.');
+
+    const counts = await getPool().query(
+      `SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE created_at >= date_trunc('month', NOW()))::int AS monthly
+       FROM cvs
+       WHERE user_id = $1`,
+      [userId]
+    );
+    const total = counts.rows[0]?.total || 0;
+    const monthly = counts.rows[0]?.monthly || 0;
+
+    if (user.plan === 'free' && monthly >= 3) {
+      throw new Error('Limite atteinte. Vous avez utilisé vos 3 essais gratuits du mois. Passez au plan VIP pour créer des CVs illimités.');
+    }
+    if (user.plan === 'premium' && total >= 10) {
+      throw new Error('Limite atteinte. Le plan Premium est limité à 10 CVs.');
     }
 
-    const newUser: User = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-      name: user.name,
-      email: emailLower,
-      passwordHash: user.passwordHash,
-      plan: 'free',
-      createdAt: new Date().toISOString()
+    const personalDetails: PersonalDetails = {
+      fullName: user.name,
+      email: user.email,
+      phone: '',
+      address: '',
+      photoUrl: '',
+      postSeeking: '',
+      description: '',
     };
 
-    data.users.push(newUser);
-    writeDb(data);
-    return newUser;
+    const { rows } = await getPool().query(
+      `INSERT INTO cvs (user_id, name, personal_details, template)
+       VALUES ($1, $2, $3::jsonb, $4)
+       RETURNING *`,
+      [userId, name || 'Mon CV', JSON.stringify(personalDetails), template]
+    );
+
+    return mapCv(rows[0]);
   },
 
-  updateUserPlan(userId: string, plan: 'free' | 'premium' | 'vip'): User {
-    const data = readDb();
-    const userIndex = data.users.findIndex(u => u.id === userId);
-    
-    if (userIndex === -1) {
-      throw new Error("Utilisateur introuvable.");
-    }
+  async updateCV(userId: string, cvId: string, updatedFields: Partial<Omit<CV, 'id' | 'userId' | 'createdAt'>>): Promise<CV> {
+    await ensureSchema();
+    const { rows } = await getPool().query(
+      `UPDATE cvs SET
+        name = COALESCE($1, name),
+        personal_details = COALESCE($2::jsonb, personal_details),
+        experiences = COALESCE($3::jsonb, experiences),
+        educations = COALESCE($4::jsonb, educations),
+        languages = COALESCE($5::jsonb, languages),
+        skills = COALESCE($6::jsonb, skills),
+        hobbies = COALESCE($7::jsonb, hobbies),
+        theme = COALESCE($8, theme),
+        template = COALESCE($9, template)
+       WHERE id = $10 AND user_id = $11
+       RETURNING *`,
+      [
+        updatedFields.name ?? null,
+        updatedFields.personalDetails === undefined ? null : JSON.stringify(updatedFields.personalDetails),
+        updatedFields.experiences === undefined ? null : JSON.stringify(updatedFields.experiences),
+        updatedFields.educations === undefined ? null : JSON.stringify(updatedFields.educations),
+        updatedFields.languages === undefined ? null : JSON.stringify(updatedFields.languages),
+        updatedFields.skills === undefined ? null : JSON.stringify(updatedFields.skills),
+        updatedFields.hobbies === undefined ? null : JSON.stringify(updatedFields.hobbies),
+        updatedFields.theme ?? null,
+        updatedFields.template ?? null,
+        cvId,
+        userId,
+      ]
+    );
 
-    data.users[userIndex].plan = plan;
-    writeDb(data);
-    return data.users[userIndex];
-  },
-
-  // --- Gestion des CVs ---
-
-  getCVs(userId: string): CV[] {
-    return readDb().cvs.filter(cv => cv.userId === userId);
-  },
-
-  getCVsCreatedThisMonth(userId: string): CV[] {
-    const currentMonth = getCurrentMonthKey();
-    return readDb().cvs.filter((cv) => (
-      cv.userId === userId && getCurrentMonthKey(new Date(cv.createdAt)) === currentMonth
-    ));
-  },
-
-  getCV(id: string): CV | undefined {
-    return readDb().cvs.find(cv => cv.id === id);
-  },
-
-  createCV(userId: string, name: string): CV {
-    const data = readDb();
-    const user = data.users.find(u => u.id === userId);
-    if (!user) throw new Error("Utilisateur non authentifié.");
-
-    // Compter le nombre de CVs existants pour l'utilisateur
-    const existingCvsCount = data.cvs.filter(cv => cv.userId === userId).length;
-    const monthlyCvsCount = data.cvs.filter((cv) => (
-      cv.userId === userId && getCurrentMonthKey(new Date(cv.createdAt)) === getCurrentMonthKey()
-    )).length;
-    
-    // Vérification des quotas du plan
-    if (user.plan === 'free' && monthlyCvsCount >= 3) {
-      throw new Error("Limite atteinte. Vous avez utilisé vos 3 essais gratuits du mois. Passez au plan VIP pour créer des CVs illimités.");
-    } else if (user.plan === 'premium' && existingCvsCount >= 10) {
-      throw new Error("Limite atteinte. Le plan Premium est limité à 10 CVs.");
-    }
-
-    const newCv: CV = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
-      userId,
-      name: name || "Mon CV",
-      personalDetails: {
-        fullName: user.name,
-        email: user.email,
-        phone: '',
-        address: '',
-        photoUrl: '',
-        postSeeking: '',
-        description: ''
-      },
-      experiences: [],
-      educations: [],
-      languages: [],
-      skills: [],
-      hobbies: [],
-      theme: 'cupcake',
-      template: 'classic',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    data.cvs.push(newCv);
-    writeDb(data);
-    return newCv;
-  },
-
-  updateCV(userId: string, cvId: string, updatedFields: Partial<Omit<CV, 'id' | 'userId' | 'createdAt'>>): CV {
-    const data = readDb();
-    const cvIndex = data.cvs.findIndex(cv => cv.id === cvId && cv.userId === userId);
-
-    if (cvIndex === -1) {
+    if (!rows[0]) {
       throw new Error("CV introuvable ou vous n'avez pas l'autorisation de le modifier.");
     }
 
-    const currentCv = data.cvs[cvIndex];
-    data.cvs[cvIndex] = {
-      ...currentCv,
-      ...updatedFields,
-      updatedAt: new Date().toISOString()
-    } as CV;
-
-    writeDb(data);
-    return data.cvs[cvIndex];
+    return mapCv(rows[0]);
   },
 
-  deleteCV(userId: string, cvId: string): void {
-    const data = readDb();
-    const initialLength = data.cvs.length;
-    
-    data.cvs = data.cvs.filter(cv => !(cv.id === cvId && cv.userId === userId));
-    
-    if (data.cvs.length === initialLength) {
+  async deleteCV(userId: string, cvId: string): Promise<void> {
+    await ensureSchema();
+    const result = await getPool().query('DELETE FROM cvs WHERE id = $1 AND user_id = $2', [cvId, userId]);
+    if (!result.rowCount) {
       throw new Error("CV introuvable ou vous n'avez pas l'autorisation de le supprimer.");
     }
-
-    writeDb(data);
   },
 
-  getAdminStats() {
-    const data = readDb();
-    const now = new Date();
-    const monthKey = getCurrentMonthKey(now);
-    const usersThisMonth = data.users.filter((user) => (
-      getCurrentMonthKey(new Date(user.createdAt)) === monthKey
-    )).length;
-    const cvsThisMonth = data.cvs.filter((cv) => (
-      getCurrentMonthKey(new Date(cv.createdAt)) === monthKey
-    )).length;
-    const monthlyPrices = { free: 0, premium: 1000, vip: 3000 };
+  async getAdminStats() {
+    await ensureSchema();
+    const [totals, plans, recentUsers] = await Promise.all([
+      getPool().query(`
+        SELECT
+          (SELECT COUNT(*)::int FROM users) AS total_users,
+          (SELECT COUNT(*)::int FROM users WHERE created_at >= date_trunc('month', NOW())) AS users_this_month,
+          (SELECT COUNT(*)::int FROM cvs) AS total_cvs,
+          (SELECT COUNT(*)::int FROM cvs WHERE created_at >= date_trunc('month', NOW())) AS cvs_this_month,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'visit') AS total_visits,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download') AS total_downloads
+      `),
+      getPool().query(`
+        SELECT plan, COUNT(*)::int AS count
+        FROM users
+        GROUP BY plan
+      `),
+      getPool().query(`
+        SELECT u.*, COUNT(c.id)::int AS cvs_count
+        FROM users u
+        LEFT JOIN cvs c ON c.user_id = u.id
+        GROUP BY u.id
+        ORDER BY u.created_at DESC
+        LIMIT 8
+      `),
+    ]);
+
+    const planCounts = { free: 0, premium: 0, vip: 0 };
+    for (const row of plans.rows) {
+      planCounts[row.plan as Plan] = row.count;
+    }
 
     return {
-      totalUsers: data.users.length,
-      usersThisMonth,
-      totalCvs: data.cvs.length,
-      cvsThisMonth,
-      totalVisits: 0,
-      totalDownloads: 0,
-      revenueMonth: data.users.reduce((sum, user) => sum + monthlyPrices[user.plan], 0),
-      plans: {
-        free: data.users.filter((user) => user.plan === 'free').length,
-        premium: data.users.filter((user) => user.plan === 'premium').length,
-        vip: data.users.filter((user) => user.plan === 'vip').length,
-      },
-      recentUsers: data.users
-        .slice()
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 8)
-        .map((user) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          plan: user.plan,
-          createdAt: user.createdAt,
-          cvsCount: data.cvs.filter((cv) => cv.userId === user.id).length,
-        })),
+      totalUsers: totals.rows[0].total_users,
+      usersThisMonth: totals.rows[0].users_this_month,
+      totalCvs: totals.rows[0].total_cvs,
+      cvsThisMonth: totals.rows[0].cvs_this_month,
+      totalVisits: totals.rows[0].total_visits,
+      totalDownloads: totals.rows[0].total_downloads,
+      revenueMonth: planCounts.premium * 1000 + planCounts.vip * 3000,
+      plans: planCounts,
+      recentUsers: recentUsers.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        plan: row.plan,
+        createdAt: new Date(row.created_at).toISOString(),
+        cvsCount: row.cvs_count,
+      })),
     };
-  }
+  },
 };

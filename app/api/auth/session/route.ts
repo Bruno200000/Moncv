@@ -11,9 +11,9 @@ export async function GET() {
     }
 
     // Calculer le nombre de CVs existants
-    const cvs = db.getCVs(user.id);
+    const cvs = await db.getCVs(user.id);
     const cvsCount = cvs.length;
-    const monthlyCvsCount = db.getCVsCreatedThisMonth(user.id).length;
+    const monthlyCvsCount = (await db.getCVsCreatedThisMonth(user.id)).length;
 
     // Déterminer la limite de CVs en fonction du plan
     let limit = 3;

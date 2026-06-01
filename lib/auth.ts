@@ -68,7 +68,7 @@ export async function getSessionUser(): Promise<User | null> {
     const decoded = verifyToken(token);
     if (!decoded || !decoded.userId) return null;
     
-    const user = db.getUserById(decoded.userId);
+    const user = await db.getUserById(decoded.userId);
     return user || null;
   } catch (error) {
     return null;

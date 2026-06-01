@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       return response;
     }
 
-    const user = db.getUserByEmail(emailLower);
+    const user = await db.getUserByEmail(emailLower);
 
     if (!user) {
       return NextResponse.json(

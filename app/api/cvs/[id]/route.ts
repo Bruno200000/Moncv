@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     }
 
     const { id } = await params;
-    const cv = db.getCV(id);
+    const cv = await db.getCV(id);
 
     if (!cv) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
       template: body.template,
     };
 
-    const updatedCv = db.updateCV(user.id, id, allowedFields);
+    const updatedCv = await db.updateCV(user.id, id, allowedFields);
 
     return NextResponse.json({
       success: true,
@@ -98,7 +98,7 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     }
 
     const { id } = await params;
-    db.deleteCV(user.id, id);
+    await db.deleteCV(user.id, id);
 
     return NextResponse.json({
       success: true,

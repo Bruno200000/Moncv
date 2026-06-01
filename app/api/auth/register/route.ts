@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const emailLower = email.toLowerCase().trim();
     
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = db.getUserByEmail(emailLower);
+    const existingUser = await db.getUserByEmail(emailLower);
     if (existingUser) {
       return NextResponse.json(
         { error: "Cet email est déjà enregistré." },
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const passwordHash = hashPassword(password);
 
     // Créer l'utilisateur
-    const newUser = db.createUser({
+    const newUser = await db.createUser({
       name,
       email: emailLower,
       passwordHash

@@ -11,7 +11,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ stats: db.getAdminStats() });
+    return NextResponse.json({ stats: await db.getAdminStats() });
   } catch (error) {
     console.error('Erreur admin stats:', error);
     return NextResponse.json(
