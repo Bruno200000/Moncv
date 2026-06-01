@@ -23,6 +23,7 @@ export interface CV {
   hobbies: Hobby[];
   theme: string;
   template?: string;
+  fontSize?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -80,9 +81,12 @@ async function ensureSchema() {
         hobbies JSONB NOT NULL DEFAULT '[]'::jsonb,
         theme TEXT NOT NULL DEFAULT 'cupcake',
         template TEXT NOT NULL DEFAULT 'classic',
+        font_size INTEGER NOT NULL DEFAULT 100,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+
+      ALTER TABLE cvs ADD COLUMN IF NOT EXISTS font_size INTEGER NOT NULL DEFAULT 100;
 
       CREATE TABLE IF NOT EXISTS analytics_events (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -162,6 +166,7 @@ function mapCv(row: any): CV {
     hobbies: jsonValue(row.hobbies, []),
     theme: row.theme,
     template: row.template,
+    fontSize: Number(row.font_size || 100),
     createdAt: new Date(row.created_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
   };
@@ -333,8 +338,9 @@ export const db = {
         skills = COALESCE($6::jsonb, skills),
         hobbies = COALESCE($7::jsonb, hobbies),
         theme = COALESCE($8, theme),
-        template = COALESCE($9, template)
-       WHERE id = $10 AND user_id = $11
+        template = COALESCE($9, template),
+        font_size = COALESCE($10, font_size)
+       WHERE id = $11 AND user_id = $12
        RETURNING *`,
       [
         updatedFields.name ?? null,
@@ -346,6 +352,7 @@ export const db = {
         updatedFields.hobbies === undefined ? null : JSON.stringify(updatedFields.hobbies),
         updatedFields.theme ?? null,
         updatedFields.template ?? null,
+        updatedFields.fontSize ?? null,
         cvId,
         userId,
       ]

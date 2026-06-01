@@ -77,6 +77,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
       hobbies: body.hobbies,
       theme: body.theme,
       template: body.template,
+      fontSize: body.fontSize,
     };
 
     const updatedCv = await db.updateCV(user.id, id, allowedFields);

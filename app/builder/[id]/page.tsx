@@ -343,6 +343,7 @@ export default function BuilderPage() {
   const [file, setFile] = useState<File | null>(null);
   const [theme, setTheme] = useState<string>('cupcake');
   const [template, setTemplate] = useState<string>('classic');
+  const [fontSize, setFontSize] = useState<number>(100);
   const [zoom, setZoom] = useState<number>(146);
   const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [experiences, setExperience] = useState<Experience[]>([]);
@@ -407,6 +408,7 @@ export default function BuilderPage() {
         setPersonalDetails(cv.personalDetails || {});
         setTheme(cv.theme || 'cupcake');
         setTemplate(cv.template || 'classic');
+        setFontSize(Number(cv.fontSize || 100));
         setExperience(cv.experiences || []);
         setEducations(cv.educations || []);
         setLanguages(cv.languages || []);
@@ -432,7 +434,7 @@ export default function BuilderPage() {
     if (loading) return;
     const timer = setTimeout(() => handleSave(), 1500);
     return () => clearTimeout(timer);
-  }, [personalDetails, experiences, educations, languages, skills, hobbies, theme, template, cvName]);
+  }, [personalDetails, experiences, educations, languages, skills, hobbies, theme, template, fontSize, cvName]);
 
   const handleSave = async () => {
     if (loading) return;
@@ -442,7 +444,7 @@ export default function BuilderPage() {
       const res = await fetch(`/api/cvs/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: cvName, personalDetails, experiences, educations, languages, skills, hobbies, theme, template }),
+        body: JSON.stringify({ name: cvName, personalDetails, experiences, educations, languages, skills, hobbies, theme, template, fontSize }),
       });
       if (!res.ok) throw new Error("Erreur de sauvegarde");
       setSaveStatus('saved');
@@ -771,6 +773,43 @@ export default function BuilderPage() {
               </div>
             </div>
 
+            {/* Font size */}
+            <div>
+              <div className="flex items-center gap-2 mb-3 text-slate-100">
+                <SlidersHorizontal className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-sm text-base-content">Taille de la police</h3>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#0b1b22] p-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-outline border-white/15 text-slate-200"
+                    onClick={() => setFontSize((value) => Math.max(80, value - 5))}
+                  >
+                    A-
+                  </button>
+                  <input
+                    type="range"
+                    min={80}
+                    max={125}
+                    step={5}
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                    className="range range-xs range-primary flex-1"
+                    aria-label="Taille de la police du CV"
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-outline border-white/15 text-slate-200"
+                    onClick={() => setFontSize((value) => Math.min(125, value + 5))}
+                  >
+                    A+
+                  </button>
+                  <span className="badge badge-outline badge-sm w-14 justify-center font-mono text-slate-200">{fontSize}%</span>
+                </div>
+              </div>
+            </div>
+
             {/* Zoom (desktop only hint) */}
             <div className="hidden lg:block">
               <div className="flex items-center gap-2 mb-3">
@@ -857,6 +896,7 @@ export default function BuilderPage() {
               file={file}
               theme={theme}
               template={template}
+              fontSize={fontSize}
               experiences={experiences}
               educations={educations}
               languages={languages}
@@ -915,6 +955,7 @@ export default function BuilderPage() {
                     file={file}
                     theme={theme}
                     template={template}
+                    fontSize={fontSize}
                     experiences={experiences}
                     educations={educations}
                     languages={languages}
@@ -987,6 +1028,7 @@ export default function BuilderPage() {
               file={file}
               theme={theme}
               template={template}
+              fontSize={fontSize}
               experiences={experiences}
               educations={educations}
               languages={languages}

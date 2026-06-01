@@ -13,6 +13,7 @@ type Props = {
     languages: Language[];
     skills: Skill[];
     hobbies: Hobby[];
+    fontSize?: number;
     download?: boolean;
     ref?: any;
 }
@@ -67,6 +68,7 @@ const CVPreview: React.FC<Props> = ({
     languages = [], 
     skills = [], 
     hobbies = [], 
+    fontSize = 100,
     download, 
     ref 
 }) => {
@@ -1119,6 +1121,14 @@ const CVPreview: React.FC<Props> = ({
 
     return (
         <div ref={ref} className={`flex w-[950px] h-[1200px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
+          <div
+            className="absolute left-0 top-0 h-full w-full origin-top-left"
+            style={{
+              transform: `scale(${Math.max(80, Math.min(125, fontSize)) / 100})`,
+              width: `${10000 / Math.max(80, Math.min(125, fontSize))}%`,
+              height: `${10000 / Math.max(80, Math.min(125, fontSize))}%`,
+            }}
+          >
             {template === 'modern' && renderModernTemplate()}
             {template === 'minimalist' && renderMinimalistTemplate()}
             {template === 'classic' && renderClassicTemplate()}
@@ -1133,6 +1143,7 @@ const CVPreview: React.FC<Props> = ({
             {template === 'vip-atlas' && renderVipAtlasTemplate()}
             {['prestige', 'luxe'].includes(template) && renderVipSignatureTemplate()}
             {['elite'].includes(template) && renderVipAtlasTemplate()}
+          </div>
         </div>
     );
 }
