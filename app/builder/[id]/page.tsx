@@ -364,8 +364,22 @@ export default function BuilderPage() {
     return getTemplateTier(templateName) === 'premium' ? PREMIUM_PAYMENT_URL : VIP_PAYMENT_URL;
   };
 
-  const handleSelectTemplate = (templateName: string) => {
-    if (!canUseTemplate(userPlan, templateName)) {
+  const refreshUserPlan = async () => {
+    try {
+      const sessionRes = await fetch('/api/auth/session', { cache: 'no-store' });
+      if (!sessionRes.ok) return userPlan;
+      const sessionData = await sessionRes.json();
+      const latestPlan = (sessionData.user?.plan || userPlan) as UserPlan;
+      setUserPlan(latestPlan);
+      return latestPlan;
+    } catch {
+      return userPlan;
+    }
+  };
+
+  const handleSelectTemplate = async (templateName: string) => {
+    const latestPlan = await refreshUserPlan();
+    if (!canUseTemplate(latestPlan, templateName)) {
       window.location.href = getPaymentUrlForTemplate(templateName);
       return;
     }

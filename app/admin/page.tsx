@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  BarChart3, Crown, Download, FileText, LogOut, Search, ShieldCheck,
+  BarChart3, Check, Crown, Download, FileText, LogOut, Search, ShieldCheck,
   Sparkles, Trash2, TrendingUp, UserCheck, Users
 } from 'lucide-react';
 
@@ -54,6 +54,7 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [busyUserId, setBusyUserId] = useState('');
+  const [pendingPlans, setPendingPlans] = useState<Record<string, Plan>>({});
 
   const loadStats = async () => {
     try {
@@ -69,6 +70,9 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data?.error || "Impossible de charger l'espace admin.");
       if (!data?.stats) throw new Error('Reponse admin vide. Veuillez vous reconnecter.');
       setStats(data.stats);
+      setPendingPlans(
+        Object.fromEntries((data.stats.users || []).map((user: AdminUser) => [user.id, user.plan]))
+      );
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement admin.');
     } finally {
@@ -110,7 +114,10 @@ export default function AdminPage() {
     }
   };
 
-  const handlePlanChange = async (user: AdminUser, plan: Plan) => {
+  const handlePlanChange = async (user: AdminUser) => {
+    const plan = pendingPlans[user.id] || user.plan;
+    if (plan === user.plan) return;
+
     setBusyUserId(user.id);
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
@@ -247,9 +254,14 @@ export default function AdminPage() {
                     <td>
                       <select
                         className="select select-bordered select-xs"
-                        value={user.plan}
+                        value={pendingPlans[user.id] || user.plan}
                         disabled={busyUserId === user.id}
-                        onChange={(event) => handlePlanChange(user, event.target.value as Plan)}
+                        onChange={(event) => {
+                          setPendingPlans((current) => ({
+                            ...current,
+                            [user.id]: event.target.value as Plan,
+                          }));
+                        }}
                       >
                         <option value="free">free</option>
                         <option value="premium">premium</option>
@@ -261,6 +273,14 @@ export default function AdminPage() {
                       {user.lastCvAt ? new Date(user.lastCvAt).toLocaleDateString('fr-FR') : 'Aucun CV'}
                     </td>
                     <td className="text-right">
+                      <button
+                        onClick={() => handlePlanChange(user)}
+                        disabled={busyUserId === user.id || (pendingPlans[user.id] || user.plan) === user.plan}
+                        className="btn btn-primary btn-xs mr-2"
+                      >
+                        {busyUserId === user.id ? <span className="loading loading-spinner loading-xs" /> : <Check className="w-3.5 h-3.5" />}
+                        Modifier
+                      </button>
                       <button
                         onClick={() => handleDeleteUser(user)}
                         disabled={busyUserId === user.id}
