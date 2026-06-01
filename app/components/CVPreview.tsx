@@ -7,7 +7,7 @@ type Props = {
     personalDetails: PersonalDetails;
     file: File | null;
     theme: string;
-    template?: string; // 'classic' | 'modern' | 'minimalist'
+    template?: string;
     experiences: Experience[];
     educations: Education[];
     languages: Language[];
@@ -283,7 +283,7 @@ const CVPreview: React.FC<Props> = ({
                     {contactParts.length > 0 && (
                         <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-base-content/60 mt-3 font-medium">
                             {contactParts.map((part, idx) => (
-                                <span key={idx} className="flex items-center">
+                            <span key={idx} className="flex items-center break-words [overflow-wrap:anywhere]">
                                     {idx > 0 && <span className="mr-3 text-base-content/30">•</span>}
                                     {part}
                                 </span>
@@ -429,7 +429,7 @@ const CVPreview: React.FC<Props> = ({
                             <ul className="space-y-2">
                                 <li className="flex">
                                     <div className="break-all text-xs relative">
-                                        <div className="ml-7">
+                                        <div className="ml-7 break-words [overflow-wrap:anywhere]">
                                             {personalDetails.phone}
                                         </div>
                                         {personalDetails.phone && (
@@ -441,7 +441,7 @@ const CVPreview: React.FC<Props> = ({
                                 </li>
                                 <li className="flex">
                                     <div className="break-all text-xs relative">
-                                        <div className="ml-7">
+                                        <div className="ml-7 break-words [overflow-wrap:anywhere]">
                                             {personalDetails.email}
                                         </div>
                                         {personalDetails.email && (
@@ -453,7 +453,7 @@ const CVPreview: React.FC<Props> = ({
                                 </li>
                                 <li className="flex">
                                     <div className="break-all text-xs relative">
-                                        <div className="ml-7">
+                                        <div className="ml-7 break-words [overflow-wrap:anywhere]">
                                             {personalDetails.address}
                                         </div>
                                         {personalDetails.address && (
@@ -785,17 +785,17 @@ const CVPreview: React.FC<Props> = ({
                     {/* Contact inline line */}
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-base-content/70 mt-3 font-semibold">
                         {personalDetails.phone && (
-                            <span className="flex items-center gap-1">
+                            <span className="flex min-w-0 items-center gap-1 break-words [overflow-wrap:anywhere]">
                                 <Phone className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.phone}
                             </span>
                         )}
                         {personalDetails.email && (
-                            <span className="flex items-center gap-1">
+                            <span className="flex min-w-0 items-center gap-1 break-words [overflow-wrap:anywhere]">
                                 <Mail className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.email}
                             </span>
                         )}
                         {personalDetails.address && (
-                            <span className="flex items-center gap-1">
+                            <span className="flex min-w-0 items-center gap-1 break-words [overflow-wrap:anywhere]">
                                 <MapPinCheckInside className="w-3.5 h-3.5 text-primary shrink-0" /> {personalDetails.address}
                             </span>
                         )}
@@ -922,6 +922,201 @@ const CVPreview: React.FC<Props> = ({
         );
     }
 
+    const renderVipSignatureTemplate = () => {
+        return (
+            <div className="grid grid-cols-[310px_1fr] w-full h-full bg-base-100 text-base-content select-none text-left overflow-hidden">
+                <aside className="bg-base-200 p-10 flex flex-col gap-7 border-r border-primary/25">
+                    <div className="text-center">
+                        {imageSrc && (
+                            <div className="w-40 h-40 rounded-full overflow-hidden border-[6px] border-primary mx-auto mb-5 shadow-xl">
+                                <img src={imageSrc} className="w-full h-full object-cover" alt={personalDetails.fullName} />
+                            </div>
+                        )}
+                        <h1 className="text-2xl font-black uppercase leading-tight break-words">{personalDetails.fullName}</h1>
+                        <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-primary break-words">{personalDetails.postSeeking}</p>
+                    </div>
+
+                    <section>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary border-b border-primary/30 pb-2 mb-3">Contact</h3>
+                        <div className="space-y-2 text-xs">
+                            {personalDetails.phone && <p className="break-words [overflow-wrap:anywhere]"><Phone className="inline w-3.5 h-3.5 mr-2 text-primary" />{personalDetails.phone}</p>}
+                            {personalDetails.email && <p className="break-words [overflow-wrap:anywhere]"><Mail className="inline w-3.5 h-3.5 mr-2 text-primary" />{personalDetails.email}</p>}
+                            {personalDetails.address && <p className="break-words [overflow-wrap:anywhere]"><MapPinCheckInside className="inline w-3.5 h-3.5 mr-2 text-primary" />{personalDetails.address}</p>}
+                        </div>
+                    </section>
+
+                    {skills.length > 0 && (
+                        <section>
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary border-b border-primary/30 pb-2 mb-3">Competences</h3>
+                            <div className="flex flex-wrap gap-1.5">
+                                {skills.map((skill, index) => (
+                                    <span key={index} className="rounded-full bg-primary/12 px-2.5 py-1 text-[10px] font-bold uppercase text-primary break-words">
+                                        {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {languages.length > 0 && (
+                        <section>
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary border-b border-primary/30 pb-2 mb-3">Langues</h3>
+                            <div className="space-y-2 text-xs">
+                                {languages.map((lang, index) => (
+                                    <div key={index} className="flex justify-between gap-3">
+                                        <span className="font-bold capitalize">{lang.language}</span>
+                                        <span className="text-primary font-semibold">{lang.proficiency}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </aside>
+
+                <main className="p-12 overflow-hidden">
+                    {personalDetails.description && (
+                        <section className="mb-8 rounded-xl border border-primary/15 bg-primary/5 p-5">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-2">Profil</h3>
+                            <p className="text-xs leading-relaxed text-base-content/80 break-words">{personalDetails.description}</p>
+                        </section>
+                    )}
+
+                    {experiences.length > 0 && (
+                        <section className="mb-8">
+                            <h3 className="text-sm font-black uppercase tracking-[0.18em] text-primary border-b border-base-content/15 pb-2 mb-5">Experience</h3>
+                            <div className="space-y-5">
+                                {experiences.map((exp, index) => (
+                                    <div key={index} className="relative pl-6">
+                                        <span className="absolute left-0 top-1 h-3 w-3 rounded-full bg-primary" />
+                                        <h4 className="text-sm font-black uppercase break-words">{exp.jobTitle}</h4>
+                                        <p className="text-[11px] font-bold text-primary">{exp.companyName} · {formatDate(exp.startDate)} - {formatDate(exp.endDate)}</p>
+                                        <p className="mt-1 text-xs leading-relaxed text-base-content/70 break-words">{exp.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {educations.length > 0 && (
+                        <section>
+                            <h3 className="text-sm font-black uppercase tracking-[0.18em] text-primary border-b border-base-content/15 pb-2 mb-5">Formation</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                {educations.map((edu, index) => (
+                                    <div key={index} className="rounded-lg bg-base-200/60 p-4">
+                                        <h4 className="text-xs font-black uppercase break-words">{edu.degree}</h4>
+                                        <p className="text-[11px] font-bold text-primary">{edu.school}</p>
+                                        <p className="text-[10px] text-base-content/50">{formatDate(edu.startDate)} - {formatDate(edu.endDate)}</p>
+                                        <p className="mt-1 text-[11px] text-base-content/70 break-words">{edu.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </main>
+            </div>
+        );
+    }
+
+    const renderVipAtlasTemplate = () => {
+        return (
+            <div className="flex flex-col w-full h-full bg-base-100 text-base-content select-none text-left overflow-hidden">
+                <header className="bg-primary text-primary-content px-14 py-10">
+                    <div className="flex items-center gap-8">
+                        {imageSrc && (
+                            <div className="h-32 w-32 rounded-2xl overflow-hidden border-4 border-primary-content/70 shrink-0">
+                                <img src={imageSrc} className="h-full w-full object-cover" alt={personalDetails.fullName} />
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <h1 className="text-4xl font-black uppercase leading-tight break-words">{personalDetails.fullName}</h1>
+                            <p className="mt-2 text-sm font-bold uppercase tracking-[0.25em] opacity-90 break-words">{personalDetails.postSeeking}</p>
+                            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold">
+                                {personalDetails.phone && <span className="break-words [overflow-wrap:anywhere]">{personalDetails.phone}</span>}
+                                {personalDetails.email && <span className="break-words [overflow-wrap:anywhere]">{personalDetails.email}</span>}
+                                {personalDetails.address && <span className="break-words [overflow-wrap:anywhere]">{personalDetails.address}</span>}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <main className="grid grid-cols-[1fr_285px] gap-8 p-12 overflow-hidden">
+                    <div className="space-y-7">
+                        {personalDetails.description && (
+                            <section>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-2">Resume professionnel</h3>
+                                <p className="text-xs leading-relaxed text-base-content/75 break-words">{personalDetails.description}</p>
+                            </section>
+                        )}
+
+                        {experiences.length > 0 && (
+                            <section>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary border-b border-primary/25 pb-2 mb-4">Parcours</h3>
+                                <div className="space-y-4">
+                                    {experiences.map((exp, index) => (
+                                        <div key={index} className="rounded-xl border border-base-content/10 p-4">
+                                            <div className="flex justify-between gap-4">
+                                                <h4 className="text-sm font-black uppercase break-words">{exp.jobTitle}</h4>
+                                                <span className="shrink-0 text-[10px] font-bold text-primary">{formatDate(exp.startDate)} - {formatDate(exp.endDate)}</span>
+                                            </div>
+                                            <p className="text-[11px] font-bold text-primary">{exp.companyName}</p>
+                                            <p className="mt-2 text-xs leading-relaxed text-base-content/70 break-words">{exp.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {educations.length > 0 && (
+                            <section>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary border-b border-primary/25 pb-2 mb-4">Diplomes</h3>
+                                <div className="space-y-3">
+                                    {educations.map((edu, index) => (
+                                        <div key={index}>
+                                            <h4 className="text-xs font-black uppercase break-words">{edu.degree}</h4>
+                                            <p className="text-[11px] text-primary font-bold">{edu.school} · {formatDate(edu.startDate)} - {formatDate(edu.endDate)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </div>
+
+                    <aside className="space-y-6 rounded-2xl bg-base-200/70 p-6">
+                        {skills.length > 0 && (
+                            <section>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-primary mb-3">Forces</h3>
+                                <div className="space-y-2">
+                                    {skills.map((skill, index) => (
+                                        <p key={index} className="rounded-md bg-base-100 px-3 py-2 text-[11px] font-bold uppercase break-words">{skill.name}</p>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                        {languages.length > 0 && (
+                            <section>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-primary mb-3">Langues</h3>
+                                <div className="space-y-2 text-xs">
+                                    {languages.map((lang, index) => (
+                                        <div key={index} className="flex justify-between gap-3">
+                                            <span className="font-bold capitalize">{lang.language}</span>
+                                            <span className="text-primary">{lang.proficiency}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                        {hobbies.length > 0 && (
+                            <section>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-primary mb-3">Interets</h3>
+                                <p className="text-xs leading-relaxed capitalize break-words">{hobbies.map(h => h.name).join(', ')}</p>
+                            </section>
+                        )}
+                    </aside>
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div ref={ref} className={`flex w-[950px] h-[1200px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
             {template === 'modern' && renderModernTemplate()}
@@ -929,6 +1124,8 @@ const CVPreview: React.FC<Props> = ({
             {template === 'classic' && renderClassicTemplate()}
             {template === 'creative' && renderCreativeTemplate()}
             {template === 'executive' && renderExecutiveTemplate()}
+            {template === 'vip-signature' && renderVipSignatureTemplate()}
+            {template === 'vip-atlas' && renderVipAtlasTemplate()}
         </div>
     );
 }

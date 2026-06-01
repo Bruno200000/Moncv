@@ -10,9 +10,7 @@ const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amou
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
 
 const buildPaymentUrl = (url: string, plan: 'premium' | 'vip') => {
-  if (typeof window === 'undefined') return url;
-  const redirectUrl = `${window.location.origin}/payment/${plan}/success`;
-  return `${url}&success_url=${encodeURIComponent(redirectUrl)}&return_url=${encodeURIComponent(redirectUrl)}`;
+  return url;
 };
 
 interface UserSession {

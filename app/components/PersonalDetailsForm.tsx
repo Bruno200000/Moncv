@@ -31,18 +31,20 @@ const PersonalDetailsForm: React.FC<Props> = ({ personalDetails, setPersonalDeta
       />
       <div className='flex'>
         <input
-          type="email"
+          type="tel"
+          inputMode="tel"
           placeholder='Email'
           value={personalDetails.email}
           onChange={(e) => handleChange(e, 'email')}
           className='input input-bordered w-full'
         />
         <input
-          type="email"
+          type="tel"
+          inputMode="tel"
           placeholder='Numéro de téléphone'
           value={personalDetails.phone}
           onChange={(e) => handleChange(e, 'phone')}
-          className='input input-bordered w-full ml-4'
+          className='input input-bordered w-full ml-4 min-w-0'
         />
       </div>
 

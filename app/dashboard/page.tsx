@@ -12,9 +12,7 @@ const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amou
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
 
 const buildPaymentUrl = (url: string, plan: 'premium' | 'vip') => {
-  if (typeof window === 'undefined') return url;
-  const redirectUrl = `${window.location.origin}/payment/${plan}/success`;
-  return `${url}&success_url=${encodeURIComponent(redirectUrl)}&return_url=${encodeURIComponent(redirectUrl)}`;
+  return url;
 };
 
 interface CV {
@@ -280,6 +278,12 @@ export default function DashboardPage() {
             <button onClick={() => setError('')} className="btn btn-xs btn-circle btn-ghost ml-auto">✕</button>
           </div>
         )}
+
+        <div className="mb-6 flex justify-end">
+          <Link href="/profile" className="btn btn-outline btn-sm rounded-xl">
+            <Settings className="w-4 h-4" /> Mon profil
+          </Link>
+        </div>
 
         {/* Dashboard Top Section (Subscription Status) */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">

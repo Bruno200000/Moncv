@@ -6,7 +6,7 @@ import {
   Eye, RotateCw, Save, ArrowLeft, Cloud, CloudOff, Loader2,
   User, Briefcase, GraduationCap, Globe, Star, Heart, PenLine,
   ChevronDown, LayoutTemplate, Palette, SlidersHorizontal,
-  FileText, Sparkles, Monitor
+  FileText, Sparkles, Monitor, Crown, Lock
 } from "lucide-react";
 import PersonalDetailsForm from "@/app/components/PersonalDetailsForm";
 import { Education, Experience, Hobby, Language, PersonalDetails, Skill } from "@/type";
@@ -19,6 +19,9 @@ import HobbyForm from "@/app/components/HobbyForm";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import confetti from "canvas-confetti";
+
+type UserPlan = 'free' | 'premium' | 'vip';
+const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
 
 // ─── Accordion Section Component ────────────────────────────────────────────
 function AccordionSection({
@@ -97,6 +100,8 @@ function TemplateCard({
   preview,
   selected,
   onSelect,
+  locked = false,
+  tier,
 }: {
   name: string;
   label: string;
@@ -104,6 +109,8 @@ function TemplateCard({
   preview: React.ReactNode;
   selected: boolean;
   onSelect: () => void;
+  locked?: boolean;
+  tier?: string;
 }) {
   return (
     <button
@@ -118,6 +125,18 @@ function TemplateCard({
       {/* Mini preview */}
       <div className="h-24 bg-base-200 flex items-center justify-center overflow-hidden relative">
         {preview}
+        {tier && (
+          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-warning px-2 py-0.5 text-[9px] font-black uppercase text-warning-content shadow">
+            <Crown className="h-3 w-3" /> {tier}
+          </span>
+        )}
+        {locked && (
+          <div className="absolute inset-0 flex items-center justify-center bg-base-300/75 backdrop-blur-[1px]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-base-100 px-3 py-1 text-[10px] font-black text-base-content shadow">
+              <Lock className="h-3 w-3" /> Plan 3000F
+            </span>
+          </div>
+        )}
         {selected && (
           <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
             <span className="badge badge-primary badge-sm font-bold">✓ Sélectionné</span>
@@ -229,6 +248,46 @@ const ExecutiveMiniPreview = () => (
   </div>
 );
 // ─── Main Builder Page ────────────────────────────────────────────────────────
+const VipSignatureMiniPreview = () => (
+  <div className="w-full h-full grid grid-cols-[38%_1fr] scale-90">
+    <div className="h-full bg-primary/15 p-2 flex flex-col items-center gap-1">
+      <div className="w-8 h-8 rounded-full bg-primary/50" />
+      <div className="h-1.5 bg-base-content/35 rounded w-full" />
+      <div className="h-1 bg-primary/45 rounded w-3/4" />
+      <div className="mt-2 h-px bg-primary/40 w-full" />
+      <div className="h-0.5 bg-base-content/20 rounded w-full" />
+      <div className="h-0.5 bg-base-content/20 rounded w-5/6" />
+    </div>
+    <div className="p-2 flex flex-col gap-1.5">
+      <div className="h-4 rounded-lg bg-primary/10 border border-primary/20" />
+      <div className="h-1 bg-primary/50 rounded w-1/3" />
+      <div className="h-0.5 bg-base-content/20 rounded w-full" />
+      <div className="h-0.5 bg-base-content/20 rounded w-5/6" />
+      <div className="h-4 rounded bg-base-200" />
+    </div>
+  </div>
+);
+
+const VipAtlasMiniPreview = () => (
+  <div className="w-full h-full flex flex-col scale-90">
+    <div className="h-8 bg-primary rounded-t p-1.5 flex items-center gap-1.5">
+      <div className="h-5 w-5 rounded bg-primary-content/30" />
+      <div className="flex-1 space-y-1">
+        <div className="h-1.5 bg-primary-content/50 rounded w-2/3" />
+        <div className="h-1 bg-primary-content/35 rounded w-1/2" />
+      </div>
+    </div>
+    <div className="flex flex-1 gap-1.5 p-2">
+      <div className="flex-1 space-y-1">
+        <div className="h-1 bg-primary/50 rounded w-1/2" />
+        <div className="h-4 rounded border border-base-content/10" />
+        <div className="h-4 rounded border border-base-content/10" />
+      </div>
+      <div className="w-1/3 rounded bg-base-200" />
+    </div>
+  </div>
+);
+
 export default function BuilderPage() {
   const params = useParams();
   const router = useRouter();
@@ -243,6 +302,7 @@ export default function BuilderPage() {
   const [theme, setTheme] = useState<string>('cupcake');
   const [template, setTemplate] = useState<string>('classic');
   const [zoom, setZoom] = useState<number>(146);
+  const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [experiences, setExperience] = useState<Experience[]>([]);
   const [educations, setEducations] = useState<Education[]>([]);
   const [languages, setLanguages] = useState<Language[]>([]);
@@ -258,6 +318,18 @@ export default function BuilderPage() {
   const [editorTab, setEditorTab] = useState<'content' | 'design'>('content');
   const cvPreviewRef = useRef(null);
 
+  const buildVipPaymentUrl = () => {
+    return VIP_PAYMENT_URL;
+  };
+
+  const handleSelectTemplate = (templateName: string, vipOnly = false) => {
+    if (vipOnly && userPlan !== 'vip') {
+      window.location.href = buildVipPaymentUrl();
+      return;
+    }
+    setTemplate(templateName);
+  };
+
   // Fetch CV data
   useEffect(() => {
     const fetchCv = async () => {
@@ -267,6 +339,11 @@ export default function BuilderPage() {
         if (!res.ok) {
           if (res.status === 401) { router.push('/login'); return; }
           throw new Error("CV introuvable ou accès refusé.");
+        }
+        const sessionRes = await fetch('/api/auth/session');
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          setUserPlan((sessionData.user?.plan || 'free') as UserPlan);
         }
         const data = await res.json();
         const cv = data.cv;
@@ -538,7 +615,7 @@ export default function BuilderPage() {
                   description="Sidebar colorée, mise en page traditionnelle"
                   preview={<ClassicMiniPreview />}
                   selected={template === 'classic'}
-                  onSelect={() => setTemplate('classic')}
+                  onSelect={() => handleSelectTemplate('classic')}
                 />
                 <TemplateCard
                   name="modern"
@@ -546,7 +623,7 @@ export default function BuilderPage() {
                   description="Header banner, colonnes épurées"
                   preview={<ModernMiniPreview />}
                   selected={template === 'modern'}
-                  onSelect={() => setTemplate('modern')}
+                  onSelect={() => handleSelectTemplate('modern')}
                 />
                 <TemplateCard
                   name="minimalist"
@@ -554,7 +631,7 @@ export default function BuilderPage() {
                   description="Mono-colonne, très épuré"
                   preview={<MinimalistMiniPreview />}
                   selected={template === 'minimalist'}
-                  onSelect={() => setTemplate('minimalist')}
+                  onSelect={() => handleSelectTemplate('minimalist')}
                 />
                 <TemplateCard
                   name="creative"
@@ -562,7 +639,7 @@ export default function BuilderPage() {
                   description="Sidebar colorée, cartes arrondies"
                   preview={<CreativeMiniPreview />}
                   selected={template === 'creative'}
-                  onSelect={() => setTemplate('creative')}
+                  onSelect={() => handleSelectTemplate('creative')}
                 />
                 <TemplateCard
                   name="executive"
@@ -570,7 +647,27 @@ export default function BuilderPage() {
                   description="Sobre et professionnel, sans photo"
                   preview={<ExecutiveMiniPreview />}
                   selected={template === 'executive'}
-                  onSelect={() => setTemplate('executive')}
+                  onSelect={() => handleSelectTemplate('executive')}
+                />
+                <TemplateCard
+                  name="vip-signature"
+                  label="Signature VIP"
+                  description="CV premium avec colonne signature et profil renforcÃ©"
+                  preview={<VipSignatureMiniPreview />}
+                  selected={template === 'vip-signature'}
+                  onSelect={() => handleSelectTemplate('vip-signature', true)}
+                  locked={userPlan !== 'vip'}
+                  tier="VIP"
+                />
+                <TemplateCard
+                  name="vip-atlas"
+                  label="Atlas VIP"
+                  description="EntÃªte puissant, blocs experts et rendu haut de gamme"
+                  preview={<VipAtlasMiniPreview />}
+                  selected={template === 'vip-atlas'}
+                  onSelect={() => handleSelectTemplate('vip-atlas', true)}
+                  locked={userPlan !== 'vip'}
+                  tier="VIP"
                 />
               </div>
             </div>

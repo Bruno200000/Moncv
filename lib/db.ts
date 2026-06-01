@@ -215,6 +215,37 @@ export const db = {
     return mapUser(rows[0]);
   },
 
+  async updateUserProfile(userId: string, fields: { name?: string; email?: string; passwordHash?: string }): Promise<User> {
+    await ensureSchema();
+    const emailLower = fields.email?.toLowerCase().trim();
+    try {
+      const { rows } = await getPool().query(
+        `UPDATE users SET
+          name = COALESCE($1, name),
+          email = COALESCE($2, email),
+          password_hash = COALESCE($3, password_hash)
+         WHERE id = $4
+         RETURNING *`,
+        [fields.name?.trim() || null, emailLower || null, fields.passwordHash || null, userId]
+      );
+      if (!rows[0]) throw new Error('Utilisateur introuvable.');
+      return mapUser(rows[0]);
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new Error('Cet email est dÃ©jÃ  utilisÃ© par un autre compte.');
+      }
+      throw error;
+    }
+  },
+
+  async deleteUser(userId: string): Promise<void> {
+    await ensureSchema();
+    const result = await getPool().query('DELETE FROM users WHERE id = $1', [userId]);
+    if (!result.rowCount) {
+      throw new Error('Utilisateur introuvable.');
+    }
+  },
+
   async getCVs(userId: string): Promise<CV[]> {
     await ensureSchema();
     const { rows } = await getPool().query(
@@ -332,7 +363,7 @@ export const db = {
 
   async getAdminStats() {
     await ensureSchema();
-    const [totals, plans, recentUsers] = await Promise.all([
+    const [totals, plans, users, recentCvs, topTemplates] = await Promise.all([
       getPool().query(`
         SELECT
           (SELECT COUNT(*)::int FROM users) AS total_users,
@@ -340,7 +371,9 @@ export const db = {
           (SELECT COUNT(*)::int FROM cvs) AS total_cvs,
           (SELECT COUNT(*)::int FROM cvs WHERE created_at >= date_trunc('month', NOW())) AS cvs_this_month,
           (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'visit') AS total_visits,
-          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download') AS total_downloads
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'visit' AND created_at >= date_trunc('month', NOW())) AS visits_this_month,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download') AS total_downloads,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download' AND created_at >= date_trunc('month', NOW())) AS downloads_this_month
       `),
       getPool().query(`
         SELECT plan, COUNT(*)::int AS count
@@ -348,12 +381,26 @@ export const db = {
         GROUP BY plan
       `),
       getPool().query(`
-        SELECT u.*, COUNT(c.id)::int AS cvs_count
+        SELECT u.*, COUNT(c.id)::int AS cvs_count, MAX(c.updated_at) AS last_cv_at
         FROM users u
         LEFT JOIN cvs c ON c.user_id = u.id
         GROUP BY u.id
         ORDER BY u.created_at DESC
+        LIMIT 50
+      `),
+      getPool().query(`
+        SELECT c.id, c.name, c.template, c.theme, c.updated_at, u.name AS user_name, u.email AS user_email
+        FROM cvs c
+        JOIN users u ON u.id = c.user_id
+        ORDER BY c.updated_at DESC
         LIMIT 8
+      `),
+      getPool().query(`
+        SELECT template, COUNT(*)::int AS count
+        FROM cvs
+        GROUP BY template
+        ORDER BY count DESC
+        LIMIT 6
       `),
     ]);
 
@@ -368,16 +415,46 @@ export const db = {
       totalCvs: totals.rows[0].total_cvs,
       cvsThisMonth: totals.rows[0].cvs_this_month,
       totalVisits: totals.rows[0].total_visits,
+      visitsThisMonth: totals.rows[0].visits_this_month,
       totalDownloads: totals.rows[0].total_downloads,
+      downloadsThisMonth: totals.rows[0].downloads_this_month,
       revenueMonth: planCounts.premium * 1000 + planCounts.vip * 3000,
       plans: planCounts,
-      recentUsers: recentUsers.rows.map((row) => ({
+      conversionRate: totals.rows[0].total_users
+        ? Math.round(((planCounts.premium + planCounts.vip) / totals.rows[0].total_users) * 100)
+        : 0,
+      averageCvsPerUser: totals.rows[0].total_users
+        ? Number((totals.rows[0].total_cvs / totals.rows[0].total_users).toFixed(1))
+        : 0,
+      recentUsers: users.rows.slice(0, 8).map((row) => ({
         id: row.id,
         name: row.name,
         email: row.email,
         plan: row.plan,
         createdAt: new Date(row.created_at).toISOString(),
         cvsCount: row.cvs_count,
+      })),
+      users: users.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        plan: row.plan,
+        createdAt: new Date(row.created_at).toISOString(),
+        cvsCount: row.cvs_count,
+        lastCvAt: row.last_cv_at ? new Date(row.last_cv_at).toISOString() : null,
+      })),
+      recentCvs: recentCvs.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        template: row.template,
+        theme: row.theme,
+        updatedAt: new Date(row.updated_at).toISOString(),
+        userName: row.user_name,
+        userEmail: row.user_email,
+      })),
+      topTemplates: topTemplates.rows.map((row) => ({
+        template: row.template,
+        count: row.count,
       })),
     };
   },
