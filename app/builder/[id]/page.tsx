@@ -359,6 +359,7 @@ export default function BuilderPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const [editorTab, setEditorTab] = useState<'content' | 'design'>('content');
+  const [viewportWidth, setViewportWidth] = useState(390);
   const cvPreviewRef = useRef(null);
 
   const getPaymentUrlForTemplate = (templateName: string) => {
@@ -428,6 +429,13 @@ export default function BuilderPage() {
     };
     if (id) fetchCv();
   }, [id, router]);
+
+  useEffect(() => {
+    const updateViewport = () => setViewportWidth(window.innerWidth);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
 
   // Auto-save
   useEffect(() => {
@@ -833,12 +841,13 @@ export default function BuilderPage() {
   );
 
   // ── Preview Panel ──────────────────────────────────────────────────────────
-  // CV preview uses an A4 ratio: 794px x 1123px.
+  // CV preview uses an A4 ratio with enough working width for the templates.
   // so the scroll container fills properly and doesn't clip the content.
-  const CV_W = 794;
-  const CV_H = 1123;
+  const CV_W = 950;
+  const CV_H = 1344;
   const PreviewPanel = ({ isMobile = false }: { isMobile?: boolean }) => {
-    const scale = isMobile ? 0.33 : zoom / 200;
+    const mobileScale = Math.min(0.38, Math.max(0.26, (viewportWidth - 28) / CV_W));
+    const scale = isMobile ? mobileScale : zoom / 200;
     const scaledW = CV_W * scale;
     const scaledH = CV_H * scale;
     return (
@@ -879,8 +888,11 @@ export default function BuilderPage() {
         )}
         {/* Container sized to the post-scale CV dimensions so scroll is correct */}
         <div
-          className="flex justify-center items-start px-4 pb-10 pt-16 sm:px-8"
-          style={{ minWidth: `${scaledW + 48}px`, minHeight: `${scaledH + 104}px` }}
+          className={`flex justify-center items-start ${isMobile ? 'px-2 pb-8 pt-6' : 'px-4 pb-10 pt-16 sm:px-8'}`}
+          style={{
+            minWidth: `${scaledW + (isMobile ? 16 : 48)}px`,
+            minHeight: `${scaledH + (isMobile ? 64 : 104)}px`,
+          }}
         >
           <div
             style={{
@@ -935,35 +947,8 @@ export default function BuilderPage() {
           {mobileTab === 'editor' ? (
             renderEditorPanel()
           ) : (
-            <div className="h-full overflow-auto moncv-workspace-grid">
-              {/* Mobile A4 preview: 794x1123 scaled down. */}
-              <div
-                className="flex justify-center px-2 py-6"
-                style={{ minHeight: `${1123 * 0.36 + 80}px` }}
-              >
-                <div
-                  style={{
-                    transform: 'scale(0.36)',
-                    transformOrigin: 'top center',
-                    width: '794px',
-                    height: '1123px',
-                    marginBottom: `${1123 * 0.36 - 1123}px`,
-                  }}
-                >
-                  <CVPreview
-                    personalDetails={personalDetails}
-                    file={file}
-                    theme={theme}
-                    template={template}
-                    fontSize={fontSize}
-                    experiences={experiences}
-                    educations={educations}
-                    languages={languages}
-                    hobbies={hobbies}
-                    skills={skills}
-                  />
-                </div>
-              </div>
+            <div className="h-full overflow-hidden">
+              <PreviewPanel isMobile />
               <div className="text-center pb-4">
                 <p className="text-xs text-base-content/40">Aperçu réduit • Appuyez sur Télécharger pour le PDF complet</p>
               </div>

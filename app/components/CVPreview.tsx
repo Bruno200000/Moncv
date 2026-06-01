@@ -413,15 +413,15 @@ const CVPreview: React.FC<Props> = ({
             <div className="flex p-16 w-full h-full text-base-content bg-base-100 text-left select-none">
                 {/* Left sidebar panel */}
                 <div className="flex flex-col w-1/3">
-                    <div className="h-44 w-44 rounded-full border-8 overflow-hidden border-primary hobbies mb-4 mx-auto shrink-0">
-                        {imageSrc && (
+                    {imageSrc && (
+                        <div className="h-44 w-44 rounded-full border-8 overflow-hidden border-primary hobbies mb-4 mx-auto shrink-0">
                             <img
                                 src={imageSrc}
                                 className="w-full h-full object-cover"
                                 alt={personalDetails.fullName}
                             />
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div className="mt-4 flex-col w-full">
                         <div>
@@ -1120,7 +1120,7 @@ const CVPreview: React.FC<Props> = ({
     }
 
     return (
-        <div ref={ref} className={`flex w-[794px] h-[1123px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
+        <div ref={ref} className={`flex w-[950px] h-[1344px] shadow-2xl relative overflow-hidden bg-base-100 ${download ? 'mb-10 border border-base-content/10' : ''}`} data-theme={theme}>
           <div className="cv-font-adjust h-full w-full" style={{ ['--cv-font-scale' as string]: Math.max(80, Math.min(125, fontSize)) / 100 }}>
             {template === 'modern' && renderModernTemplate()}
             {template === 'minimalist' && renderMinimalistTemplate()}
