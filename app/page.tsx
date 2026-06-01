@@ -15,6 +15,8 @@ interface UserSession {
 export default function LandingPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [upgradingPlan, setUpgradingPlan] = useState<'premium' | 'vip' | null>(null);
+  const [pricingMessage, setPricingMessage] = useState('');
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté pour adapter la navigation
@@ -28,6 +30,33 @@ export default function LandingPage() {
       .catch((err) => console.error("Erreur de session :", err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleUpgrade = async (plan: 'premium' | 'vip') => {
+    if (!session) return;
+
+    setUpgradingPlan(plan);
+    setPricingMessage('');
+
+    try {
+      const res = await fetch('/api/user/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Impossible de changer de forfait.");
+      }
+
+      setSession({ ...session, plan });
+      setPricingMessage(`Votre forfait ${plan.toUpperCase()} est maintenant actif.`);
+    } catch (err: any) {
+      setPricingMessage(err.message || "Une erreur est survenue.");
+    } finally {
+      setUpgradingPlan(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-base-300 text-base-content font-sans overflow-x-hidden relative selection:bg-primary selection:text-primary-content">
@@ -79,10 +108,6 @@ export default function LandingPage() {
       <section className="hero min-h-[85vh] px-6 sm:px-12 relative flex items-center justify-center">
         <div className="hero-content text-center max-w-4xl flex-col lg:flex-row gap-12 z-10 py-12">
           <div>
-            <div className="badge badge-primary badge-outline gap-1.5 py-3 px-4 text-xs font-semibold uppercase tracking-wider mb-6 animate-bounce">
-              <Sparkles className="w-3.5 h-3.5" /> Propulsé par Next.js & Tailwind
-            </div>
-            
             <h1 className="text-5xl sm:text-7xl font-black leading-tight tracking-tight mb-6">
               Créez un CV qui vous{' '}
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
@@ -217,6 +242,11 @@ export default function LandingPage() {
           <p className="text-sm sm:text-base text-base-content/60 max-w-xl mx-auto">
             Commencez gratuitement, puis passez à la vitesse supérieure quand vous en avez besoin.
           </p>
+          {pricingMessage && (
+            <div className="alert alert-info mt-6 max-w-xl mx-auto rounded-xl py-3 text-sm">
+              <span>{pricingMessage}</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
@@ -282,10 +312,10 @@ export default function LandingPage() {
 
               <ul className="space-y-3.5 text-sm mb-8">
                 <li className="flex items-center gap-3 text-base-content/85">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> **Jusqu'à 10 CVs** simultanés
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Jusqu'à 10 CVs simultanés
                 </li>
                 <li className="flex items-center gap-3 text-base-content/85">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Accès à **tous les 30+ thèmes**
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Accès à tous les 30+ thèmes
                 </li>
                 <li className="flex items-center gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Duplication de CV en un clic
@@ -296,12 +326,22 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <Link 
-              href={session ? "/dashboard" : "/register"} 
-              className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
-            >
-              {session ? "Changer de forfait" : "Obtenir l'Accès Premium"}
-            </Link>
+            {session ? (
+              <button
+                onClick={() => handleUpgrade('premium')}
+                disabled={upgradingPlan !== null || session.plan === 'premium'}
+                className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
+              >
+                {upgradingPlan === 'premium' ? <span className="loading loading-spinner loading-sm" /> : session.plan === 'premium' ? "Forfait actuel" : "Choisir Premium"}
+              </button>
+            ) : (
+              <Link
+                href="/register?next=/dashboard&create=1"
+                className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10"
+              >
+                Obtenir l'Accès Premium
+              </Link>
+            )}
           </div>
 
           {/* VIP Card */}
@@ -323,13 +363,13 @@ export default function LandingPage() {
 
               <ul className="space-y-3.5 text-sm mb-8">
                 <li className="flex items-center gap-3 text-neutral-content/90">
-                  <Crown className="w-5 h-5 text-warning shrink-0" /> **CVs illimités**
+                  <Crown className="w-5 h-5 text-warning shrink-0" /> CVs illimités
                 </li>
                 <li className="flex items-center gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Accès aux thèmes VIP exclusifs
                 </li>
                 <li className="flex items-center gap-3 text-neutral-content/90">
-                  <Crown className="w-5 h-5 text-warning shrink-0" /> **Export PDF HD sans filigrane**
+                  <Crown className="w-5 h-5 text-warning shrink-0" /> Export PDF HD sans filigrane
                 </li>
                 <li className="flex items-center gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Support prioritaire VIP 24/7
@@ -337,12 +377,22 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <Link 
-              href={session ? "/dashboard" : "/register"} 
-              className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
-            >
-              {session ? "Changer de forfait" : "Devenir membre VIP"}
-            </Link>
+            {session ? (
+              <button
+                onClick={() => handleUpgrade('vip')}
+                disabled={upgradingPlan !== null || session.plan === 'vip'}
+                className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
+              >
+                {upgradingPlan === 'vip' ? <span className="loading loading-spinner loading-sm" /> : session.plan === 'vip' ? "Forfait actuel" : "Choisir VIP"}
+              </button>
+            ) : (
+              <Link
+                href="/register?next=/dashboard&create=1"
+                className="btn btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01]"
+              >
+                Devenir membre VIP
+              </Link>
+            )}
           </div>
 
         </div>
