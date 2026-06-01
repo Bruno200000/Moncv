@@ -159,3 +159,7 @@
         margin-left: 0 !important;
     }
 }
+
+.cv-font-adjust :is(p, li, span, h1, h2, h3, h4) {
+    zoom: var(--cv-font-scale, 1);
+}
