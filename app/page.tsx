@@ -5,6 +5,7 @@ import {
   FileText, Check, ArrowRight, Sparkles, Crown, 
   Zap, Lock, LayoutTemplate, Download, CheckCircle2 
 } from 'lucide-react';
+import { trackEvent } from '@/app/components/AnalyticsTracker';
 
 const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
@@ -345,6 +346,7 @@ export default function LandingPage() {
               ) : (
                 <a
                   href={buildPaymentUrl(PREMIUM_PAYMENT_URL, 'premium')}
+                  onClick={() => trackEvent('upgrade_click', { source: 'landing_pricing', plan: 'premium' })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary h-auto min-h-11 bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-xl normal-case shadow-lg shadow-primary/10 whitespace-normal"
@@ -403,6 +405,7 @@ export default function LandingPage() {
               ) : (
                 <a
                   href={buildPaymentUrl(VIP_PAYMENT_URL, 'vip')}
+                  onClick={() => trackEvent('upgrade_click', { source: 'landing_pricing', plan: 'vip' })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-warning h-auto min-h-11 text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-xl normal-case shadow-md hover:scale-[1.01] whitespace-normal"

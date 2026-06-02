@@ -92,10 +92,14 @@ async function ensureSchema() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID REFERENCES users(id) ON DELETE SET NULL,
         cv_id UUID REFERENCES cvs(id) ON DELETE SET NULL,
-        type TEXT NOT NULL CHECK (type IN ('visit', 'download')),
+        type TEXT NOT NULL,
         path TEXT,
+        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+
+      ALTER TABLE analytics_events DROP CONSTRAINT IF EXISTS analytics_events_type_check;
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}'::jsonb;
 
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
       CREATE INDEX IF NOT EXISTS idx_cvs_user_id ON cvs(user_id);
@@ -373,17 +377,41 @@ export const db = {
     }
   },
 
+  async trackAnalyticsEvent(event: {
+    userId?: string | null;
+    cvId?: string | null;
+    type: string;
+    path?: string | null;
+    metadata?: Record<string, unknown>;
+  }): Promise<void> {
+    await ensureSchema();
+    const safeType = event.type.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_').slice(0, 50);
+    if (!safeType) return;
+
+    await getPool().query(
+      `INSERT INTO analytics_events (user_id, cv_id, type, path, metadata)
+       VALUES ($1, $2, $3, $4, $5::jsonb)`,
+      [
+        event.userId || null,
+        event.cvId || null,
+        safeType,
+        event.path?.slice(0, 300) || null,
+        JSON.stringify(event.metadata || {}),
+      ]
+    );
+  },
+
   async getAdminStats() {
     await ensureSchema();
-    const [totals, plans, users, recentCvs, topTemplates] = await Promise.all([
+    const [totals, plans, users, recentCvs, topTemplates, behaviorEvents] = await Promise.all([
       getPool().query(`
         SELECT
           (SELECT COUNT(*)::int FROM users) AS total_users,
           (SELECT COUNT(*)::int FROM users WHERE created_at >= date_trunc('month', NOW())) AS users_this_month,
           (SELECT COUNT(*)::int FROM cvs) AS total_cvs,
           (SELECT COUNT(*)::int FROM cvs WHERE created_at >= date_trunc('month', NOW())) AS cvs_this_month,
-          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'visit') AS total_visits,
-          (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'visit' AND created_at >= date_trunc('month', NOW())) AS visits_this_month,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type IN ('visit', 'page_view')) AS total_visits,
+          (SELECT COUNT(*)::int FROM analytics_events WHERE type IN ('visit', 'page_view') AND created_at >= date_trunc('month', NOW())) AS visits_this_month,
           (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download') AS total_downloads,
           (SELECT COUNT(*)::int FROM analytics_events WHERE type = 'download' AND created_at >= date_trunc('month', NOW())) AS downloads_this_month
       `),
@@ -413,6 +441,14 @@ export const db = {
         GROUP BY template
         ORDER BY count DESC
         LIMIT 6
+      `),
+      getPool().query(`
+        SELECT type, COUNT(*)::int AS count
+        FROM analytics_events
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY type
+        ORDER BY count DESC
+        LIMIT 10
       `),
     ]);
 
@@ -466,6 +502,10 @@ export const db = {
       })),
       topTemplates: topTemplates.rows.map((row) => ({
         template: row.template,
+        count: row.count,
+      })),
+      behaviorEvents: behaviorEvents.rows.map((row) => ({
+        type: row.type,
         count: row.count,
       })),
     };

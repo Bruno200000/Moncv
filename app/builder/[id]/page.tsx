@@ -16,6 +16,7 @@ import EducationForm from "@/app/components/EducationForm";
 import LanguageForm from "@/app/components/LanguageForm";
 import SkillForm from "@/app/components/SkillForm";
 import HobbyForm from "@/app/components/HobbyForm";
+import { trackEvent } from "@/app/components/AnalyticsTracker";
 import { canUseTemplate, CV_TEMPLATES, getTemplateTier, type UserPlan } from "@/lib/cvTemplates";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
@@ -382,9 +383,11 @@ export default function BuilderPage() {
   const handleSelectTemplate = async (templateName: string) => {
     const latestPlan = await refreshUserPlan();
     if (!canUseTemplate(latestPlan, templateName)) {
+      trackEvent('upgrade_click', { source: 'template_locked', template: templateName, plan: latestPlan });
       window.location.href = getPaymentUrlForTemplate(templateName);
       return;
     }
+    trackEvent('template_select', { template: templateName, plan: latestPlan });
     setTemplate(templateName);
   };
 
@@ -499,6 +502,7 @@ export default function BuilderPage() {
       pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imageHeight);
       pdf.save(`${cvName.replace(/\s+/g, '_')}.pdf`);
+      trackEvent('download', { cvId: id, template, theme });
       (document.getElementById('modal_preview') as HTMLDialogElement)?.close();
       confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, zIndex: 9999 });
     } catch (err) {

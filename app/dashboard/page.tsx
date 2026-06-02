@@ -7,6 +7,7 @@ import {
   Trash2, Copy, Edit3, ShieldAlert, Sparkles, Check, Crown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { trackEvent } from '@/app/components/AnalyticsTracker';
 
 const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
@@ -127,6 +128,7 @@ export default function DashboardPage() {
       const modal = document.getElementById('new_cv_modal') as HTMLDialogElement;
       if (modal) modal.close();
       setNewCvName('');
+      trackEvent('cv_create', { source: 'dashboard', plan: user?.plan || null });
 
       // Rediriger vers l'éditeur
       router.push(`/builder/${data.cv.id}`);
@@ -149,6 +151,7 @@ export default function DashboardPage() {
       
       // Recharger
       fetchData();
+      trackEvent('cv_delete', { cvId: id });
       confetti({
         particleCount: 40,
         spread: 40,
@@ -205,6 +208,7 @@ export default function DashboardPage() {
 
       // Recharger
       fetchData();
+      trackEvent('cv_duplicate', { cvId: cv.id, plan: user?.plan || null });
       confetti({
         particleCount: 50,
         spread: 60,
@@ -338,7 +342,10 @@ export default function DashboardPage() {
               </p>
             </div>
             <button 
-              onClick={() => setShowUpgradeModal(true)} 
+              onClick={() => {
+                trackEvent('upgrade_click', { source: 'dashboard_card', plan: user?.plan || null });
+                setShowUpgradeModal(true);
+              }} 
               className="btn btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none w-full mt-4 normal-case rounded-xl shadow-lg shadow-primary/10"
             >
               Voir les tarifs
@@ -575,6 +582,7 @@ export default function DashboardPage() {
                 ) : (
                   <a
                     href={buildPaymentUrl(PREMIUM_PAYMENT_URL, 'premium')}
+                    onClick={() => trackEvent('upgrade_click', { source: 'pricing_modal', plan: 'premium' })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-sm btn-primary bg-gradient-to-r from-primary to-secondary text-primary-content border-none btn-block rounded-lg normal-case shadow-md"
@@ -621,6 +629,7 @@ export default function DashboardPage() {
                 ) : (
                   <a
                     href={buildPaymentUrl(VIP_PAYMENT_URL, 'vip')}
+                    onClick={() => trackEvent('upgrade_click', { source: 'pricing_modal', plan: 'vip' })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-sm btn-warning text-neutral bg-gradient-to-r from-warning to-amber-500 border-none btn-block rounded-lg normal-case shadow-md hover:scale-[1.01]"

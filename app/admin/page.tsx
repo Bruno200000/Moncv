@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   BarChart3, Check, Crown, Download, FileText, LogOut, Search, ShieldCheck,
-  Sparkles, Trash2, TrendingUp, UserCheck, Users
+  MessageSquare, Sparkles, Trash2, TrendingUp, UserCheck, Users
 } from 'lucide-react';
 
 type Plan = 'free' | 'premium' | 'vip';
@@ -45,6 +45,7 @@ type AdminStats = {
     userEmail: string;
   }>;
   topTemplates: Array<{ template: string; count: number }>;
+  behaviorEvents?: Array<{ type: string; count: number }>;
 };
 
 export default function AdminPage() {
@@ -55,6 +56,10 @@ export default function AdminPage() {
   const [query, setQuery] = useState('');
   const [busyUserId, setBusyUserId] = useState('');
   const [pendingPlans, setPendingPlans] = useState<Record<string, Plan>>({});
+  const [messageTarget, setMessageTarget] = useState<'all' | Plan>('all');
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   const loadStats = async () => {
     try {
@@ -132,6 +137,31 @@ export default function AdminPage() {
       alert(err.message);
     } finally {
       setBusyUserId('');
+    }
+  };
+
+  const handleSendMessage = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSendingMessage(true);
+    try {
+      const res = await fetch('/api/admin/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target: messageTarget,
+          subject: messageSubject,
+          message: messageBody,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || 'Envoi impossible.');
+      alert(`${data.sent} message(s) envoye(s), ${data.failed} echec(s).`);
+      setMessageSubject('');
+      setMessageBody('');
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -221,6 +251,57 @@ export default function AdminPage() {
             <MiniStat label="Visites totales" value={stats.totalVisits ?? 0} compact />
             <MiniStat label="Telechargements ce mois" value={stats.downloadsThisMonth ?? 0} compact />
           </div>
+        </section>
+
+        <section className="rounded-2xl bg-base-200 border border-base-content/10 p-6 mt-6">
+          <h2 className="font-black text-lg mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-primary" /> Comportements 30 jours
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            {(stats.behaviorEvents || []).map((event) => (
+              <MiniStat key={event.type} label={event.type.replaceAll('_', ' ')} value={event.count} compact />
+            ))}
+            {(stats.behaviorEvents || []).length === 0 && (
+              <p className="text-sm text-base-content/50">Aucun evenement comportemental pour le moment.</p>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-base-200 border border-base-content/10 p-6 mt-6">
+          <h2 className="font-black text-lg mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-primary" /> Envoyer un message
+          </h2>
+          <form onSubmit={handleSendMessage} className="grid grid-cols-1 lg:grid-cols-[180px_1fr] gap-3">
+            <select
+              value={messageTarget}
+              onChange={(event) => setMessageTarget(event.target.value as 'all' | Plan)}
+              className="select select-bordered select-sm"
+            >
+              <option value="all">Tous</option>
+              <option value="free">Gratuit</option>
+              <option value="premium">Premium</option>
+              <option value="vip">VIP</option>
+            </select>
+            <input
+              value={messageSubject}
+              onChange={(event) => setMessageSubject(event.target.value)}
+              className="input input-bordered input-sm"
+              placeholder="Sujet"
+              maxLength={120}
+              required
+            />
+            <textarea
+              value={messageBody}
+              onChange={(event) => setMessageBody(event.target.value)}
+              className="textarea textarea-bordered min-h-28 lg:col-span-2"
+              placeholder="Message aux utilisateurs"
+              required
+            />
+            <button disabled={sendingMessage} className="btn btn-primary btn-sm lg:col-start-2 justify-self-end">
+              {sendingMessage && <span className="loading loading-spinner loading-xs" />}
+              Envoyer
+            </button>
+          </form>
         </section>
 
         <section className="rounded-2xl bg-base-200 border border-base-content/10 p-6 mt-6">
