@@ -18,6 +18,7 @@ import SkillForm from "@/app/components/SkillForm";
 import HobbyForm from "@/app/components/HobbyForm";
 import { trackEvent } from "@/app/components/AnalyticsTracker";
 import { canUseTemplate, CV_TEMPLATES, getTemplateTier, type UserPlan } from "@/lib/cvTemplates";
+import { getPersonalDescriptionError, isPersonalDescriptionValid } from "@/lib/cvValidation";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import confetti from "canvas-confetti";
@@ -300,6 +301,9 @@ const getTemplatePreview = (templateId: string) => {
     starter: <MinimalistMiniPreview />,
     clean: <ModernMiniPreview />,
     timeline: <ClassicMiniPreview />,
+    'compact-pro': <ExecutiveMiniPreview />,
+    graduate: <MinimalistMiniPreview />,
+    administrative: <ModernMiniPreview />,
     creative: <CreativeMiniPreview />,
     executive: <ExecutiveMiniPreview />,
     'pro-sidebar': <ClassicMiniPreview />,
@@ -307,6 +311,11 @@ const getTemplatePreview = (templateId: string) => {
     elegant: <MinimalistMiniPreview />,
     focus: <ModernMiniPreview />,
     tech: <CreativeMiniPreview />,
+    consultant: <ExecutiveMiniPreview />,
+    'finance-pro': <ExecutiveMiniPreview />,
+    'project-lead': <ClassicMiniPreview />,
+    'sales-pro': <ModernMiniPreview />,
+    'hr-pro': <MinimalistMiniPreview />,
     'vip-signature': <VipSignatureMiniPreview />,
     'vip-atlas': <VipAtlasMiniPreview />,
     prestige: <VipSignatureMiniPreview />,
@@ -314,6 +323,9 @@ const getTemplatePreview = (templateId: string) => {
     portfolio: <CreativeMiniPreview />,
     luxe: <VipSignatureMiniPreview />,
     elite: <VipAtlasMiniPreview />,
+    'ceo-brief': <VipSignatureMiniPreview />,
+    'global-leader': <VipAtlasMiniPreview />,
+    'board-room': <VipSignatureMiniPreview />,
   };
 
   return previews[templateId] || <ClassicMiniPreview />;
@@ -449,6 +461,10 @@ export default function BuilderPage() {
 
   const handleSave = async () => {
     if (loading) return;
+    if (!isPersonalDescriptionValid(personalDetails)) {
+      setSaveStatus('error');
+      return;
+    }
     setSaving(true);
     setSaveStatus('saving');
     try {
@@ -474,6 +490,10 @@ export default function BuilderPage() {
   ];
 
   const handleDownloadPdf = async () => {
+    if (!isPersonalDescriptionValid(personalDetails)) {
+      alert(getPersonalDescriptionError());
+      return;
+    }
     const element = cvPreviewRef.current as HTMLElement | null;
     if (!element) return;
     try {

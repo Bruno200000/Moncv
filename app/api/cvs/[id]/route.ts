@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { canUseTemplate } from '@/lib/cvTemplates';
+import { getPersonalDescriptionError, isPersonalDescriptionValid } from '@/lib/cvValidation';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -63,6 +64,13 @@ export async function PUT(request: Request, { params }: RouteContext) {
       return NextResponse.json(
         { error: "Ce modele n'est pas inclus dans votre abonnement." },
         { status: 403 }
+      );
+    }
+
+    if (body.personalDetails && !isPersonalDescriptionValid(body.personalDetails)) {
+      return NextResponse.json(
+        { error: getPersonalDescriptionError() },
+        { status: 400 }
       );
     }
 

@@ -15,6 +15,9 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'starter', label: 'Starter', description: 'CV compact pour debuter rapidement', tier: 'free' },
   { id: 'clean', label: 'Clean', description: 'Presentation claire pour profils polyvalents', tier: 'free' },
   { id: 'timeline', label: 'Timeline', description: 'Parcours lisible avec experiences en ligne', tier: 'free' },
+  { id: 'compact-pro', label: 'Compact Pro', description: 'CV dense et direct pour candidatures rapides', tier: 'free' },
+  { id: 'graduate', label: 'Jeune Diplome', description: 'Structure claire pour stages et premiers emplois', tier: 'free' },
+  { id: 'administrative', label: 'Administratif', description: 'Modele sobre pour profils bureau et support', tier: 'free' },
 
   { id: 'creative', label: 'Creatif Plus', description: 'Sidebar forte, tags et blocs visuels', tier: 'premium' },
   { id: 'executive', label: 'Executive Plus', description: 'Sobre et professionnel, sans photo', tier: 'premium' },
@@ -23,6 +26,11 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'elegant', label: 'Elegant', description: 'Style raffine pour candidatures selectives', tier: 'premium' },
   { id: 'focus', label: 'Focus', description: 'Lecture directe des competences cles', tier: 'premium' },
   { id: 'tech', label: 'Tech Plus', description: 'CV moderne pour profils digitaux et IT', tier: 'premium' },
+  { id: 'consultant', label: 'Consultant', description: 'Presentation conseil, missions et impact', tier: 'premium' },
+  { id: 'finance-pro', label: 'Finance Pro', description: 'Style rigoureux pour banque, audit et gestion', tier: 'premium' },
+  { id: 'project-lead', label: 'Chef de Projet', description: 'Priorite aux resultats, equipes et livrables', tier: 'premium' },
+  { id: 'sales-pro', label: 'Commercial Pro', description: 'Profil oriente objectifs, clients et performance', tier: 'premium' },
+  { id: 'hr-pro', label: 'RH Pro', description: 'Modele humain et structure pour ressources humaines', tier: 'premium' },
 
   { id: 'vip-signature', label: 'Signature VIP', description: 'Colonne signature et profil renforce', tier: 'vip' },
   { id: 'vip-atlas', label: 'Atlas VIP', description: 'Entete puissant et blocs experts', tier: 'vip' },
@@ -31,6 +39,9 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'portfolio', label: 'Portfolio VIP', description: 'CV expressif pour profils creatifs seniors', tier: 'vip' },
   { id: 'luxe', label: 'Luxe', description: 'Style premium elegant et tres distinctif', tier: 'vip' },
   { id: 'elite', label: 'Elite', description: 'Modele VIP dense pour profils experts', tier: 'vip' },
+  { id: 'ceo-brief', label: 'CEO Brief', description: 'Synthese executive pour dirigeants et fondateurs', tier: 'vip' },
+  { id: 'global-leader', label: 'Global Leader', description: 'Rendu international pour profils seniors', tier: 'vip' },
+  { id: 'board-room', label: 'Board Room', description: 'Presentation prestige pour comites et direction', tier: 'vip' },
 ];
 
 const planRank: Record<UserPlan, number> = {

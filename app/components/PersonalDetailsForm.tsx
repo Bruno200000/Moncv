@@ -1,5 +1,6 @@
 import { PersonalDetails } from '@/type';
 import React from 'react'
+import { PERSONAL_DESCRIPTION_MIN_LENGTH, getPersonalDescriptionLength } from '@/lib/cvValidation';
 
 type Props = {
   personalDetails: PersonalDetails;
@@ -8,6 +9,8 @@ type Props = {
 }
 
 const PersonalDetailsForm: React.FC<Props> = ({ personalDetails, setPersonalDetails, setFile }) => {
+  const descriptionLength = getPersonalDescriptionLength(personalDetails);
+  const descriptionIsTooShort = descriptionLength < PERSONAL_DESCRIPTION_MIN_LENGTH;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, fied: keyof PersonalDetails) => {
     setPersonalDetails({ ...personalDetails, [fied]: e.target.value })
@@ -82,8 +85,14 @@ const PersonalDetailsForm: React.FC<Props> = ({ personalDetails, setPersonalDeta
         placeholder='Description de la personne'
         value={personalDetails.description}
         onChange={(e) => handleChange(e, 'description')}
-        className='input input-bordered w-full'
+        minLength={PERSONAL_DESCRIPTION_MIN_LENGTH}
+        required
+        aria-invalid={descriptionIsTooShort}
+        className={`textarea textarea-bordered w-full min-h-28 ${descriptionIsTooShort ? 'textarea-error' : ''}`}
       ></textarea>
+      <div className={`text-xs ${descriptionIsTooShort ? 'text-error' : 'text-success'}`}>
+        {descriptionLength}/{PERSONAL_DESCRIPTION_MIN_LENGTH} caracteres minimum pour bien decrire votre profil.
+      </div>
 
 
     </div>

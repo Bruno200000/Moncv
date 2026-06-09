@@ -1128,14 +1128,15 @@ const CVPreview: React.FC<Props> = ({
             {template === 'creative' && renderCreativeTemplate()}
             {template === 'executive' && renderExecutiveTemplate()}
             {['starter', 'elegant'].includes(template) && renderMinimalistTemplate()}
-            {['clean', 'focus'].includes(template) && renderModernTemplate()}
-            {['timeline', 'pro-sidebar'].includes(template) && renderClassicTemplate()}
-            {['corporate-plus', 'director'].includes(template) && renderExecutiveTemplate()}
+            {['clean', 'focus', 'administrative', 'sales-pro'].includes(template) && renderModernTemplate()}
+            {['timeline', 'pro-sidebar', 'project-lead'].includes(template) && renderClassicTemplate()}
+            {['corporate-plus', 'director', 'compact-pro', 'consultant', 'finance-pro'].includes(template) && renderExecutiveTemplate()}
             {['tech', 'portfolio'].includes(template) && renderCreativeTemplate()}
+            {['graduate', 'hr-pro'].includes(template) && renderMinimalistTemplate()}
             {template === 'vip-signature' && renderVipSignatureTemplate()}
             {template === 'vip-atlas' && renderVipAtlasTemplate()}
-            {['prestige', 'luxe'].includes(template) && renderVipSignatureTemplate()}
-            {['elite'].includes(template) && renderVipAtlasTemplate()}
+            {['prestige', 'luxe', 'ceo-brief', 'board-room'].includes(template) && renderVipSignatureTemplate()}
+            {['elite', 'global-leader'].includes(template) && renderVipAtlasTemplate()}
           </div>
         </div>
     );
