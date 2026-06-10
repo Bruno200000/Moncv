@@ -494,10 +494,6 @@ export default function BuilderPage() {
 
   const handleSave = async () => {
     if (loading) return;
-    if (!isPersonalDescriptionValid(personalDetails)) {
-      setSaveStatus('error');
-      return;
-    }
     setSaving(true);
     setSaveStatus('saving');
     try {
@@ -506,9 +502,13 @@ export default function BuilderPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: cvName, personalDetails, experiences, educations, languages, skills, hobbies, theme, template, fontSize }),
       });
-      if (!res.ok) throw new Error("Erreur de sauvegarde");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erreur de sauvegarde");
+      }
       setSaveStatus('saved');
-    } catch {
+    } catch (error) {
+      console.error('Erreur de sauvegarde:', error);
       setSaveStatus('error');
     } finally {
       setSaving(false);
