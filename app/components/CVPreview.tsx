@@ -924,6 +924,122 @@ const CVPreview: React.FC<Props> = ({
         );
     }
 
+    const renderAtsClassicTemplate = () => {
+        const contactParts = [
+            personalDetails.email,
+            personalDetails.phone,
+            personalDetails.address,
+        ].filter(Boolean);
+
+        const sectionTitle = (title: string) => (
+            <h3 className="border-t-2 border-base-content/70 pt-3 text-[15px] font-black uppercase tracking-[0.16em] text-base-content">
+                {title}
+            </h3>
+        );
+
+        return (
+            <div className="h-full w-full overflow-hidden bg-white px-16 py-14 text-left font-serif text-[#27211f] select-none">
+                <header className="mb-9 text-center">
+                    <h1 className="text-[30px] font-black uppercase tracking-[0.06em] leading-tight">
+                        {personalDetails.fullName}
+                    </h1>
+                    <p className="mt-1 text-[15px] text-[#4b4540]">
+                        {personalDetails.postSeeking}
+                    </p>
+                    {contactParts.length > 0 && (
+                        <div className="mx-auto mt-4 flex max-w-[760px] flex-wrap justify-center gap-x-6 gap-y-1 text-[11px] text-[#4b4540]">
+                            {contactParts.map((part, index) => (
+                                <span key={`${part}-${index}`} className="break-words [overflow-wrap:anywhere]">
+                                    {part}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </header>
+
+                <main className="space-y-6 text-[13px] leading-relaxed">
+                    {personalDetails.description && (
+                        <section>
+                            {sectionTitle('Resume du profil')}
+                            <p className="mt-2 text-justify">{personalDetails.description}</p>
+                        </section>
+                    )}
+
+                    {experiences.length > 0 && (
+                        <section>
+                            {sectionTitle('Experiences professionnelles')}
+                            <div className="mt-2 space-y-4">
+                                {experiences.map((exp, index) => (
+                                    <article key={index}>
+                                        <div className="flex items-baseline justify-between gap-5">
+                                            <h4 className="text-[13px] font-bold">
+                                                {exp.jobTitle}
+                                                {exp.companyName && <span> chez {exp.companyName}</span>}
+                                            </h4>
+                                            <span className="shrink-0 text-[11px] font-bold">
+                                                {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
+                                            </span>
+                                        </div>
+                                        {exp.description && (
+                                            <ul className="mt-1 list-disc space-y-1 pl-6">
+                                                {exp.description.split(/\n|•|-/).map((item) => item.trim()).filter(Boolean).slice(0, 4).map((item, itemIndex) => (
+                                                    <li key={itemIndex}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {skills.length > 0 && (
+                        <section>
+                            {sectionTitle('Competences / distinctions')}
+                            <p className="mt-2">
+                                <strong>Competences:</strong> {skills.map((skill) => skill.name).join(', ')}
+                            </p>
+                        </section>
+                    )}
+
+                    {educations.length > 0 && (
+                        <section>
+                            {sectionTitle('Formation')}
+                            <div className="mt-2 space-y-3">
+                                {educations.map((edu, index) => (
+                                    <article key={index}>
+                                        <div className="flex items-baseline justify-between gap-5">
+                                            <h4 className="text-[13px] font-bold">{edu.degree}</h4>
+                                            <span className="shrink-0 text-[11px] font-bold">{formatDate(edu.endDate) || formatDate(edu.startDate)}</span>
+                                        </div>
+                                        <p className="italic">{edu.school}</p>
+                                        {edu.description && <p className="mt-1">{edu.description}</p>}
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {(languages.length > 0 || hobbies.length > 0) && (
+                        <section>
+                            {sectionTitle('Langues & centres d interet')}
+                            {languages.length > 0 && (
+                                <p className="mt-2">
+                                    <strong>Langues:</strong> {languages.map((lang) => `${lang.language} (${lang.proficiency})`).join(', ')}
+                                </p>
+                            )}
+                            {hobbies.length > 0 && (
+                                <p className="mt-1">
+                                    <strong>Passions:</strong> {hobbies.map((hobby) => hobby.name).join(', ')}
+                                </p>
+                            )}
+                        </section>
+                    )}
+                </main>
+            </div>
+        );
+    }
+
     const renderVipSignatureTemplate = () => {
         return (
             <div className="grid grid-cols-[310px_1fr] w-full h-full bg-base-100 text-base-content select-none text-left overflow-hidden">
@@ -1127,6 +1243,7 @@ const CVPreview: React.FC<Props> = ({
             {template === 'classic' && renderClassicTemplate()}
             {template === 'creative' && renderCreativeTemplate()}
             {template === 'executive' && renderExecutiveTemplate()}
+            {['ats-simple', 'ats-ivoire', 'ats-clean-line', 'ats-academic', 'ats-senior-pro', 'ats-consulting-pro', 'ats-tech-lead', 'ats-manager-pro', 'ats-director-elite', 'ats-global-elite'].includes(template) && renderAtsClassicTemplate()}
             {['starter', 'elegant'].includes(template) && renderMinimalistTemplate()}
             {['clean', 'focus', 'administrative', 'sales-pro'].includes(template) && renderModernTemplate()}
             {['timeline', 'pro-sidebar', 'project-lead'].includes(template) && renderClassicTemplate()}

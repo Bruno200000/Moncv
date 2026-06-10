@@ -273,6 +273,25 @@ const VipSignatureMiniPreview = () => (
   </div>
 );
 
+const AtsClassicMiniPreview = () => (
+  <div className="w-full h-full bg-white p-3 text-[#2a2522] scale-90">
+    <div className="mx-auto mb-2 h-2 w-2/3 rounded bg-[#2a2522]" />
+    <div className="mx-auto mb-3 h-1 w-1/2 rounded bg-[#2a2522]/45" />
+    <div className="mb-2 h-px w-full bg-[#2a2522]/60" />
+    <div className="space-y-1">
+      <div className="h-1 w-1/3 rounded bg-[#2a2522]/70" />
+      <div className="h-0.5 w-full rounded bg-[#2a2522]/25" />
+      <div className="h-0.5 w-5/6 rounded bg-[#2a2522]/20" />
+    </div>
+    <div className="my-2 h-px w-full bg-[#2a2522]/60" />
+    <div className="space-y-1">
+      <div className="h-1 w-1/2 rounded bg-[#2a2522]/70" />
+      <div className="h-0.5 w-full rounded bg-[#2a2522]/25" />
+      <div className="h-0.5 w-4/5 rounded bg-[#2a2522]/20" />
+    </div>
+  </div>
+);
+
 const VipAtlasMiniPreview = () => (
   <div className="w-full h-full flex flex-col scale-90">
     <div className="h-8 bg-primary rounded-t p-1.5 flex items-center gap-1.5">
@@ -304,6 +323,10 @@ const getTemplatePreview = (templateId: string) => {
     'compact-pro': <ExecutiveMiniPreview />,
     graduate: <MinimalistMiniPreview />,
     administrative: <ModernMiniPreview />,
+    'ats-simple': <AtsClassicMiniPreview />,
+    'ats-ivoire': <AtsClassicMiniPreview />,
+    'ats-clean-line': <AtsClassicMiniPreview />,
+    'ats-academic': <AtsClassicMiniPreview />,
     creative: <CreativeMiniPreview />,
     executive: <ExecutiveMiniPreview />,
     'pro-sidebar': <ClassicMiniPreview />,
@@ -316,6 +339,10 @@ const getTemplatePreview = (templateId: string) => {
     'project-lead': <ClassicMiniPreview />,
     'sales-pro': <ModernMiniPreview />,
     'hr-pro': <MinimalistMiniPreview />,
+    'ats-senior-pro': <AtsClassicMiniPreview />,
+    'ats-consulting-pro': <AtsClassicMiniPreview />,
+    'ats-tech-lead': <AtsClassicMiniPreview />,
+    'ats-manager-pro': <AtsClassicMiniPreview />,
     'vip-signature': <VipSignatureMiniPreview />,
     'vip-atlas': <VipAtlasMiniPreview />,
     prestige: <VipSignatureMiniPreview />,
@@ -326,6 +353,8 @@ const getTemplatePreview = (templateId: string) => {
     'ceo-brief': <VipSignatureMiniPreview />,
     'global-leader': <VipAtlasMiniPreview />,
     'board-room': <VipSignatureMiniPreview />,
+    'ats-director-elite': <AtsClassicMiniPreview />,
+    'ats-global-elite': <AtsClassicMiniPreview />,
   };
 
   return previews[templateId] || <ClassicMiniPreview />;
@@ -373,6 +402,10 @@ export default function BuilderPage() {
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const [editorTab, setEditorTab] = useState<'content' | 'design'>('content');
   const [viewportWidth, setViewportWidth] = useState(390);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState("");
   const cvPreviewRef = useRef(null);
 
   const getPaymentUrlForTemplate = (templateName: string) => {
@@ -482,6 +515,40 @@ export default function BuilderPage() {
     }
   };
 
+  const handleGenerateFromPrompt = async () => {
+    const prompt = aiPrompt.trim();
+    if (!prompt || aiGenerating) return;
+
+    setAiGenerating(true);
+    setAiError("");
+    try {
+      const res = await fetch('/api/ai/generate-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generation impossible.");
+
+      const cv = data.cv || {};
+      if (cv.name) setCvName(cv.name);
+      setPersonalDetails((current) => ({ ...current, ...(cv.personalDetails || {}) }));
+      setExperience(Array.isArray(cv.experiences) ? cv.experiences : []);
+      setEducations(Array.isArray(cv.educations) ? cv.educations : []);
+      setLanguages(Array.isArray(cv.languages) ? cv.languages : []);
+      setSkills(Array.isArray(cv.skills) ? cv.skills : []);
+      setHobbies(Array.isArray(cv.hobbies) ? cv.hobbies : []);
+      if (cv.template) setTemplate(cv.template);
+      if (cv.theme) setTheme(cv.theme);
+      setEditorTab('design');
+      trackEvent('ai_generate_cv', { cvId: id });
+    } catch (error: any) {
+      setAiError(error.message || "Une erreur est survenue pendant la generation.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
   const themes = [
     "light", "dark", "cupcake", "bumblebee", "emerald", "corporate", "synthwave",
     "retro", "cyberpunk", "valentine", "halloween", "garden", "forest", "aqua",
@@ -575,6 +642,14 @@ export default function BuilderPage() {
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            className={`btn btn-sm gap-1.5 rounded-lg ${aiPanelOpen ? 'btn-secondary' : 'btn-ghost border border-white/10 text-slate-200 hover:bg-white/10'}`}
+            onClick={() => setAiPanelOpen((open) => !open)}
+            type="button"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Prompt IA</span>
+          </button>
           {/* Save status */}
           <div className="tooltip tooltip-bottom" data-tip={
             saveStatus === 'saved' ? 'Sauvegardé' :
@@ -617,6 +692,36 @@ export default function BuilderPage() {
           <Palette className="w-3.5 h-3.5" /> Design
         </button>
       </div>
+
+      {aiPanelOpen && (
+        <div className="border-b border-white/10 bg-[#0b1b22] px-4 py-3">
+          <label className="mb-2 flex items-center gap-2 text-xs font-bold text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            Generer un CV avec un prompt
+          </label>
+          <textarea
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            className="textarea textarea-bordered min-h-24 w-full resize-none text-xs"
+            placeholder="Exemple: Cree un CV pour un developpeur full-stack senior a Abidjan, 6 ans d experience, React, Node.js, AWS, projets fintech, style simple et naturel."
+          />
+          {aiError && <p className="mt-2 text-xs text-error">{aiError}</p>}
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-[11px] leading-relaxed text-slate-400">
+              Le contenu genere reste modifiable dans les champs du CV.
+            </p>
+            <button
+              type="button"
+              onClick={handleGenerateFromPrompt}
+              disabled={!aiPrompt.trim() || aiGenerating}
+              className="btn btn-primary btn-sm shrink-0 gap-1.5 rounded-lg"
+            >
+              {aiGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Generer
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto no-scrollbar">

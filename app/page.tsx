@@ -9,6 +9,7 @@ import { trackEvent } from '@/app/components/AnalyticsTracker';
 
 const PREMIUM_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=1000';
 const VIP_PAYMENT_URL = 'https://pay.wave.com/m/M_ci_x9IzJZ0zY6sa/c/ci/?amount=3000';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://moncv.app';
 
 const buildPaymentUrl = (url: string, plan: 'premium' | 'vip') => {
   return url;
@@ -23,6 +24,37 @@ interface UserSession {
 export default function LandingPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'MonCV',
+    url: SITE_URL,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'fr',
+    description:
+      'Créateur de CV professionnel en ligne avec modèles gratuits, premium, génération par prompt IA et export PDF.',
+    offers: [
+      {
+        '@type': 'Offer',
+        name: 'Gratuit',
+        price: '0',
+        priceCurrency: 'XOF',
+      },
+      {
+        '@type': 'Offer',
+        name: 'Premium',
+        price: '1000',
+        priceCurrency: 'XOF',
+      },
+      {
+        '@type': 'Offer',
+        name: 'VIP',
+        price: '3000',
+        priceCurrency: 'XOF',
+      },
+    ],
+  };
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté pour adapter la navigation
@@ -39,6 +71,10 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-base-300 text-base-content font-sans overflow-x-hidden relative selection:bg-primary selection:text-primary-content">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       {/* Decorative Glow Elements */}
       <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[130px] pointer-events-none" />
       <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[130px] pointer-events-none" />
@@ -53,6 +89,7 @@ export default function LandingPage() {
         </div>
         
         <div className="flex-none gap-6 hidden md:flex text-sm font-medium">
+          <a href="#about" className="hover:text-primary transition-colors">À propos</a>
           <a href="#features" className="hover:text-primary transition-colors">Fonctionnalités</a>
           <a href="#pricing" className="hover:text-primary transition-colors">Tarifs</a>
         </div>
@@ -97,7 +134,7 @@ export default function LandingPage() {
             </h1>
             
             <p className="text-base sm:text-xl text-base-content/75 max-w-2xl mx-auto mb-8 leading-relaxed break-words">
-              MonCV est l'outil ultime de création de curriculum vitae moderne. Choisissez un thème, complétez vos informations et téléchargez un PDF professionnel en quelques clics.
+              MonCV est l'outil ultime de création de curriculum vitae moderne. Choisissez un modèle gratuit ou premium, ou générez un CV complet avec un simple prompt.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-4">
@@ -197,10 +234,30 @@ export default function LandingPage() {
                 </div>
 
                 <div className="absolute bottom-4 left-4 hidden sm:flex bg-base-200/90 border border-base-content/10 rounded-xl px-3 py-2 text-xs font-semibold items-center gap-1.5 shadow-md backdrop-blur animate-pulse">
-                  <LayoutTemplate className="w-3.5 h-3.5 text-primary" /> 30+ Thèmes
+                  <LayoutTemplate className="w-3.5 h-3.5 text-primary" /> 40+ Thèmes
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-16 sm:py-20 px-4 sm:px-8 lg:px-12 bg-base-100/60 border-y border-base-content/5">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-[0.22em] text-primary">À propos</span>
+            <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
+              Un outil simple pour créer des CV sérieux, rapides et professionnels.
+            </h2>
+          </div>
+          <div className="space-y-4 text-sm leading-relaxed text-base-content/70 sm:text-base">
+            <p>
+              MonCV aide les candidats, freelances et jeunes diplômés à produire des CV propres sans perdre du temps sur la mise en page.
+            </p>
+            <p>
+              La plateforme combine modèles gratuits, modèles premium et génération par prompt IA pour transformer une description de profil en CV structuré, modifiable et prêt à exporter en PDF.
+            </p>
           </div>
         </div>
       </section>
@@ -215,15 +272,15 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
             {/* Feature 1 */}
             <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
               <div className="p-3 bg-primary/10 text-primary w-fit rounded-xl mb-6">
                 <LayoutTemplate className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Thèmes DaisyUI</h3>
+              <h3 className="text-xl font-bold mb-3">40+ modèles</h3>
               <p className="text-sm text-base-content/70 leading-relaxed">
-                Profitez de plus de 30 thèmes (Sunset, Dark, Valentine, Cupcake...) pour accorder votre CV à votre personnalité ou au secteur ciblé.
+                Profitez de modèles gratuits et de designs premium professionnels, dont une série ATS simple et naturelle inspirée des CV classiques.
               </p>
             </div>
 
@@ -232,13 +289,24 @@ export default function LandingPage() {
               <div className="p-3 bg-secondary/10 text-secondary w-fit rounded-xl mb-6">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Sauvegarde Automatique</h3>
+              <h3 className="text-xl font-bold mb-3">Création par prompt</h3>
+              <p className="text-sm text-base-content/70 leading-relaxed">
+                Décrivez votre profil, votre expérience et le poste visé: l'IA prépare un CV structuré que vous pouvez ensuite corriger et personnaliser.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
+              <div className="p-3 bg-secondary/10 text-secondary w-fit rounded-xl mb-6">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Sauvegarde automatique</h3>
               <p className="text-sm text-base-content/70 leading-relaxed">
                 Ne perdez plus jamais vos saisies. Notre éditeur synchronise automatiquement vos modifications dans la base locale toutes les secondes.
               </p>
             </div>
 
-            {/* Feature 3 */}
+            {/* Feature 4 */}
             <div className="card bg-base-100 border border-base-content/5 p-6 sm:p-8 rounded-2xl hover:shadow-xl hover:scale-[1.02] transition-all duration-300 break-words">
               <div className="p-3 bg-accent/10 text-accent w-fit rounded-xl mb-6">
                 <Download className="w-6 h-6" />
@@ -285,7 +353,7 @@ export default function LandingPage() {
                   <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Jusqu'à 3 CVs maximum
                 </li>
                 <li className="flex items-start gap-3 text-base-content/80">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Accès aux modèles standards
+                  <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Accès aux modèles standards et ATS gratuits
                 </li>
                 <li className="flex items-start gap-3 text-base-content/80">
                   <CheckCircle2 className="w-5 h-5 text-success shrink-0" /> Export PDF standard
@@ -327,10 +395,13 @@ export default function LandingPage() {
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Jusqu'à 10 CVs simultanés
                 </li>
                 <li className="flex items-start gap-3 text-base-content/85">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Accès à tous les 30+ thèmes
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Accès aux modèles premium professionnels
                 </li>
                 <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Duplication de CV en un clic
+                </li>
+                <li className="flex items-start gap-3 text-base-content/85">
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Génération de CV par prompt IA
                 </li>
                 <li className="flex items-start gap-3 text-base-content/85">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0" /> Support client 24h par email
@@ -387,6 +458,9 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Accès aux thèmes VIP exclusifs
+                </li>
+                <li className="flex items-start gap-3 text-neutral-content/90">
+                  <Crown className="w-5 h-5 text-warning shrink-0" /> Modèles ATS Elite pour profils seniors
                 </li>
                 <li className="flex items-start gap-3 text-neutral-content/90">
                   <Crown className="w-5 h-5 text-warning shrink-0" /> Export PDF HD sans filigrane

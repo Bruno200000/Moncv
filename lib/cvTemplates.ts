@@ -18,6 +18,10 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'compact-pro', label: 'Compact Pro', description: 'CV dense et direct pour candidatures rapides', tier: 'free' },
   { id: 'graduate', label: 'Jeune Diplome', description: 'Structure claire pour stages et premiers emplois', tier: 'free' },
   { id: 'administrative', label: 'Administratif', description: 'Modele sobre pour profils bureau et support', tier: 'free' },
+  { id: 'ats-simple', label: 'ATS Simple', description: 'Simple, naturel et lisible pour les recruteurs', tier: 'free' },
+  { id: 'ats-ivoire', label: 'ATS Ivoire', description: 'Inspire du modele classique professionnel fourni', tier: 'free' },
+  { id: 'ats-clean-line', label: 'Clean Line', description: 'Sections nettes, lignes fines et lecture rapide', tier: 'free' },
+  { id: 'ats-academic', label: 'Academique ATS', description: 'Parfait pour formations, certifications et projets', tier: 'free' },
 
   { id: 'creative', label: 'Creatif Plus', description: 'Sidebar forte, tags et blocs visuels', tier: 'premium' },
   { id: 'executive', label: 'Executive Plus', description: 'Sobre et professionnel, sans photo', tier: 'premium' },
@@ -31,6 +35,10 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'project-lead', label: 'Chef de Projet', description: 'Priorite aux resultats, equipes et livrables', tier: 'premium' },
   { id: 'sales-pro', label: 'Commercial Pro', description: 'Profil oriente objectifs, clients et performance', tier: 'premium' },
   { id: 'hr-pro', label: 'RH Pro', description: 'Modele humain et structure pour ressources humaines', tier: 'premium' },
+  { id: 'ats-senior-pro', label: 'Senior Pro ATS', description: 'Modele payant tres professionnel pour profils confirmes', tier: 'premium' },
+  { id: 'ats-consulting-pro', label: 'Consulting ATS', description: 'Style conseil sobre, impact et missions claires', tier: 'premium' },
+  { id: 'ats-tech-lead', label: 'Tech Lead ATS', description: 'Simple, naturel et optimise pour profils IT', tier: 'premium' },
+  { id: 'ats-manager-pro', label: 'Manager ATS', description: 'Presentation professionnelle orientee resultats', tier: 'premium' },
 
   { id: 'vip-signature', label: 'Signature VIP', description: 'Colonne signature et profil renforce', tier: 'vip' },
   { id: 'vip-atlas', label: 'Atlas VIP', description: 'Entete puissant et blocs experts', tier: 'vip' },
@@ -42,6 +50,8 @@ export const CV_TEMPLATES: CVTemplateDefinition[] = [
   { id: 'ceo-brief', label: 'CEO Brief', description: 'Synthese executive pour dirigeants et fondateurs', tier: 'vip' },
   { id: 'global-leader', label: 'Global Leader', description: 'Rendu international pour profils seniors', tier: 'vip' },
   { id: 'board-room', label: 'Board Room', description: 'Presentation prestige pour comites et direction', tier: 'vip' },
+  { id: 'ats-director-elite', label: 'Director ATS Elite', description: 'Sobriete haut de gamme pour direction et comites', tier: 'vip' },
+  { id: 'ats-global-elite', label: 'Global ATS Elite', description: 'Modele international premium, simple et naturel', tier: 'vip' },
 ];
 
 const planRank: Record<UserPlan, number> = {
