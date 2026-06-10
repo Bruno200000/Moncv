@@ -6,7 +6,7 @@ import {
   Eye, RotateCw, Save, ArrowLeft, Cloud, CloudOff, Loader2,
   User, Briefcase, GraduationCap, Globe, Star, Heart, PenLine,
   ChevronDown, LayoutTemplate, Palette, SlidersHorizontal,
-  FileText, Sparkles, Monitor, Crown, Lock
+  FileText, Sparkles, Monitor, Crown, Lock, X
 } from "lucide-react";
 import PersonalDetailsForm from "@/app/components/PersonalDetailsForm";
 import { Education, Experience, Hobby, Language, PersonalDetails, Skill } from "@/type";
@@ -541,6 +541,7 @@ export default function BuilderPage() {
       if (cv.template) setTemplate(cv.template);
       if (cv.theme) setTheme(cv.theme);
       setEditorTab('design');
+      setAiPanelOpen(false);
       trackEvent('ai_generate_cv', { cvId: id });
     } catch (error: any) {
       setAiError(error.message || "Une erreur est survenue pendant la generation.");
@@ -644,7 +645,7 @@ export default function BuilderPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             className={`btn btn-sm gap-1.5 rounded-lg ${aiPanelOpen ? 'btn-secondary' : 'btn-ghost border border-white/10 text-slate-200 hover:bg-white/10'}`}
-            onClick={() => setAiPanelOpen((open) => !open)}
+            onClick={() => setAiPanelOpen(true)}
             type="button"
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -692,36 +693,6 @@ export default function BuilderPage() {
           <Palette className="w-3.5 h-3.5" /> Design
         </button>
       </div>
-
-      {aiPanelOpen && (
-        <div className="border-b border-white/10 bg-[#0b1b22] px-4 py-3">
-          <label className="mb-2 flex items-center gap-2 text-xs font-bold text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Generer un CV avec un prompt
-          </label>
-          <textarea
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            className="textarea textarea-bordered min-h-24 w-full resize-none text-xs"
-            placeholder="Exemple: Cree un CV pour un developpeur full-stack senior a Abidjan, 6 ans d experience, React, Node.js, AWS, projets fintech, style simple et naturel."
-          />
-          {aiError && <p className="mt-2 text-xs text-error">{aiError}</p>}
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-[11px] leading-relaxed text-slate-400">
-              Le contenu genere reste modifiable dans les champs du CV.
-            </p>
-            <button
-              type="button"
-              onClick={handleGenerateFromPrompt}
-              disabled={!aiPrompt.trim() || aiGenerating}
-              className="btn btn-primary btn-sm shrink-0 gap-1.5 rounded-lg"
-            >
-              {aiGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              Generer
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -1134,6 +1105,62 @@ export default function BuilderPage() {
           </div>
         </div>
       </div>
+
+      {aiPanelOpen && (
+        <div className="fixed inset-0 z-[90] flex items-start justify-center bg-black/65 px-3 py-6 backdrop-blur-sm sm:px-6 sm:py-10">
+          <div className="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#08151a] shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 bg-[#071116] px-4 py-3 sm:px-6">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm font-black text-primary">
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span>Generer un CV avec un prompt</span>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">
+                  Le contenu genere reste modifiable dans les champs du CV.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAiPanelOpen(false)}
+                className="btn btn-sm btn-ghost btn-circle shrink-0 text-slate-300 hover:bg-white/10"
+                aria-label="Fermer le prompt IA"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                className="textarea textarea-bordered min-h-[360px] w-full resize-y border-white/15 bg-[#0b1b22] text-sm leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-primary focus:outline-none sm:min-h-[430px]"
+                placeholder="Exemple: Cree un CV pour un developpeur full-stack senior a Abidjan, 6 ans d experience, React, Node.js, AWS, projets fintech, style simple et naturel."
+                autoFocus
+              />
+              {aiError && <p className="mt-3 text-sm text-error">{aiError}</p>}
+            </div>
+
+            <div className="flex flex-col-reverse gap-3 border-t border-white/10 bg-[#071116] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <button
+                type="button"
+                onClick={() => setAiPanelOpen(false)}
+                className="btn btn-ghost border border-white/10 text-slate-300 hover:bg-white/10"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerateFromPrompt}
+                disabled={!aiPrompt.trim() || aiGenerating}
+                className="btn btn-primary gap-2 rounded-xl px-6"
+              >
+                {aiGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Generer le CV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/*  MODAL — PDF Preview & Download                                      */}
